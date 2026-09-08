@@ -32,11 +32,29 @@ final class Gateways
         return array_filter(self::all(), fn (Gateway $gateway) => $gateway->isEnabled());
     }
 
+    /**
+     * A gateway that may be offered to a retailer right now. Use this to open a
+     * payment — never to finish one.
+     */
     public static function find(string $key): ?Gateway
     {
         $gateway = self::all()[$key] ?? null;
 
         return $gateway?->isEnabled() ? $gateway : null;
+    }
+
+    /**
+     * A registered gateway, enabled or not. This is what a payment already in
+     * flight must be settled through.
+     *
+     * Turning a gateway off — pulling its keys, or zeroing the PayPal rate —
+     * means "stop offering this", not "abandon money already taken". Resolving
+     * a webhook through find() would 404 those callbacks and leave a buyer
+     * charged with their order still sitting unpaid.
+     */
+    public static function handler(string $key): ?Gateway
+    {
+        return self::all()[$key] ?? null;
     }
 
     /**

@@ -24,7 +24,10 @@ class WebhookController extends Controller
 {
     public function __invoke(Request $request, string $gateway): JsonResponse
     {
-        $handler = Gateways::find($gateway);
+        // handler(), not find(): a gateway that has since been switched off
+        // still has payments in flight, and dropping their callbacks would
+        // leave buyers charged with orders that never move.
+        $handler = Gateways::handler($gateway);
 
         if (! $handler) {
             return response()->json(['status' => 'unknown gateway'], 404);

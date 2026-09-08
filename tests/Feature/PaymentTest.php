@@ -271,6 +271,29 @@ class PaymentTest extends TestCase
             ->assertJsonCount(1, 'order.payment_options');
     }
 
+    /*
+     * Switching a gateway off means "stop offering this", not "abandon money
+     * already taken". A payment opened while it was on must still be
+     * finishable, or a buyer ends up charged with an order that never moves.
+     */
+    public function test_a_payment_in_flight_still_settles_after_its_gateway_is_switched_off(): void
+    {
+        $this->fakeRazorpay();
+        $order = $this->order();
+        $this->start($order)->assertCreated();
+
+        // The keys go, but the webhook secret stays — exactly what happens when
+        // staff pull a gateway while a buyer is mid-checkout.
+        config(['payments.razorpay.key' => null, 'payments.razorpay.secret' => null]);
+        Gateways::flush();
+
+        $this->razorpayWebhook(
+            $this->capturedEvent('order_RZP123', 'pay_HOOK', (int) round((float) $order->total * 100))
+        )->assertOk()->assertJsonPath('status', 'ok');
+
+        $this->assertSame('payment_received', $order->fresh()->status);
+    }
+
     /* ---------------------------------------------------------------- webhooks */
 
     private function razorpayWebhook(array $body): \Illuminate\Testing\TestResponse

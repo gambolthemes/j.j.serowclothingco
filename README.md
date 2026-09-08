@@ -130,6 +130,18 @@ signature, PayPal by capturing server-side and by its signature-verification
 API. An unsigned webhook is ignored, and a webhook quoting the wrong amount is
 refused and logged.
 
+Check the setup against the real sandboxes — the test suite fakes both gateways,
+which says nothing about whether the keys in `.env` are the right ones:
+
+```bash
+php artisan payments:check                  # config, then a live call to each gateway
+php artisan payments:check --webhook=JS-2046 # sign a webhook and post it at yourself
+```
+
+It refuses live credentials without `--force`. The `--webhook` run proves the
+whole settlement path locally without waiting on a real buyer; for a gateway to
+reach you for real it needs a public URL, so use a tunnel while testing.
+
 ### 6. Check
 
 - `php artisan about` — confirm `Debug Mode: OFF` and the mailer is not `log`

@@ -81,7 +81,11 @@ class PaymentController extends Controller
         ]);
 
         $order = $request->user()->orders()->where('code', strtoupper(trim($code)))->firstOrFail();
-        $gateway = Gateways::find($data['gateway']);
+
+        // Same reason as the webhook: a payment opened while a gateway was on
+        // has to be finishable after it is switched off. Only `start` below
+        // asks whether a gateway may still be offered.
+        $gateway = Gateways::handler($data['gateway']);
 
         $payment = $order->payments()
             ->where('gateway', $data['gateway'])
