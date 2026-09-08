@@ -83,6 +83,9 @@ class RetailerController extends Controller
             'is_admin' => $user->is_admin,
             'joined_at' => $user->created_at->toIso8601String(),
             'orders_count' => (int) $user->orders_count,
+            // What the accounts desk needs to match an incoming transfer to a
+            // retailer, and the tax identity to raise the invoice against.
+            'payment_profile' => $user->paymentProfile?->payload(),
             'addresses' => $user->addresses,
             'orders' => $user->orders()->withCount('items')->get()->map(fn (Order $order) => [
                 'code' => $order->code,

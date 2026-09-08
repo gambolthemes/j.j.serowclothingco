@@ -30,7 +30,10 @@ class Storefront
                 ->get()
                 ->map(fn (Color $color) => $color->toStorefront())
                 ->all(),
-            'settings' => Setting::values(),
+            // storefrontValues(), not values(): this payload is printed into the
+            // page for guests as well, and the company's own bank details are
+            // not for the public page source.
+            'settings' => Setting::storefrontValues(),
         ];
     }
 }

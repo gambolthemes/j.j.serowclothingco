@@ -25,6 +25,16 @@ export const updateProfile = (payload) =>
 
 export const updatePassword = (payload) => axios.put('/api/account/password', payload);
 
+/* ---- billing & payment ----
+   Tax identity and the account the advance comes from. No card details: orders
+   settle by transfer, so there is no gateway and nothing to tokenise. */
+
+/** Returns the profile plus the method list and where to send the money. */
+export const getPaymentProfile = () => axios.get('/api/account/payment').then((r) => r.data);
+
+export const savePaymentProfile = (payload) =>
+    axios.put('/api/account/payment', payload).then(unwrap('profile'));
+
 export const listAddresses = () => axios.get('/api/account/addresses').then(unwrap('addresses'));
 
 export const createAddress = (payload) =>

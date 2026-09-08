@@ -30,6 +30,7 @@ const OrdersPage = lazy(() => import('./pages/account/OrdersPage'));
 const OrderDetailPage = lazy(() => import('./pages/account/OrderDetailPage'));
 const InvoicePage = lazy(() => import('./pages/account/InvoicePage'));
 const AddressesPage = lazy(() => import('./pages/account/AddressesPage'));
+const PaymentPage = lazy(() => import('./pages/account/PaymentPage'));
 const PasswordPage = lazy(() => import('./pages/account/PasswordPage'));
 
 const AdminLayout = lazy(() => import('./components/admin/AdminLayout'));
@@ -93,6 +94,7 @@ function App() {
                                     <Route path="orders" element={<OrdersPage />} />
                                     <Route path="orders/:code" element={<OrderDetailPage />} />
                                     <Route path="addresses" element={<AddressesPage />} />
+                                    <Route path="payment" element={<PaymentPage />} />
                                     <Route path="password" element={<PasswordPage />} />
                                 </Route>
 

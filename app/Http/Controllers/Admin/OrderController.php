@@ -45,12 +45,16 @@ class OrderController extends Controller
 
     public function show(string $code): JsonResponse
     {
-        $order = Order::with(['items', 'user:id,name,company,email', 'statusEvents'])
+        $order = Order::with(['items', 'user:id,name,company,email', 'user.paymentProfile', 'statusEvents'])
             ->where('code', strtoupper(trim($code)))
             ->firstOrFail();
 
         return response()->json(['order' => $this->summary($order) + [
             'shipping_address' => $order->shipping_address,
+            'billing_profile' => $order->billing_profile,
+            // The account the advance should arrive from, so the desk can match
+            // a transfer to an order instead of asking on WhatsApp.
+            'payment_profile' => $order->user->paymentProfile?->payload(),
             'notes' => $order->notes,
             'history' => $order->statusEvents->map(fn ($event) => [
                 'id' => $event->id,

@@ -36,6 +36,16 @@ class SettingController extends Controller
             'COMPANY_EMAIL' => ['required', 'email', 'max:160'],
             'COMPANY_LOCATION' => ['required', 'string', 'max:160'],
 
+            // All optional: a shop that only takes UPI should not have to invent
+            // an IFSC to save the form. Format is still checked when given —
+            // these numbers end up on an invoice people transfer money against.
+            'COMPANY_GSTIN' => ['nullable', 'string', 'size:15', 'regex:/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/'],
+            'PAY_TO_ACCOUNT_NAME' => ['nullable', 'string', 'max:160'],
+            'PAY_TO_ACCOUNT_NUMBER' => ['nullable', 'string', 'regex:/^[0-9]{9,18}$/'],
+            'PAY_TO_IFSC' => ['nullable', 'string', 'size:11', 'regex:/^[A-Z]{4}0[A-Z0-9]{6}$/'],
+            'PAY_TO_BANK_NAME' => ['nullable', 'string', 'max:160'],
+            'PAY_TO_UPI' => ['nullable', 'string', 'max:120', 'regex:/^[a-zA-Z0-9._-]{2,64}@[a-zA-Z]{2,32}$/'],
+
             'TIERS' => ['required', 'array', 'min:1'],
             'TIERS.*.min' => ['required', 'integer', 'min:1'],
             // The open-ended top tier is stored as null.

@@ -203,6 +203,85 @@ const AdminSettingsPage = () => {
             </div>
 
             <div className={`${cardClass} mt-6`}>
+                <h3 className="font-label text-[11px] font-semibold uppercase tracking-[0.2em]">
+                    Payment instructions
+                </h3>
+                <p className="mt-2 text-sm text-foreground/60">
+                    Where retailers send the advance. Shown on their payment screen and on any invoice still
+                    awaiting payment — and, unlike everything above, never printed into the public page. Leave
+                    blank what you do not use; the block is hidden until there is a UPI ID or an account number.
+                </p>
+
+                <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                    <label className="block">
+                        <span className={labelClass}>Our GSTIN (printed on every invoice)</span>
+                        <input
+                            value={form.COMPANY_GSTIN ?? ''}
+                            onChange={set('COMPANY_GSTIN')}
+                            className={`${fieldClass} uppercase`}
+                            placeholder="22AAAAA0000A1Z5"
+                            maxLength={15}
+                        />
+                        {errors.COMPANY_GSTIN && <p className={errorClass}>{errors.COMPANY_GSTIN}</p>}
+                    </label>
+                    <label className="block">
+                        <span className={labelClass}>UPI ID</span>
+                        <input
+                            value={form.PAY_TO_UPI ?? ''}
+                            onChange={set('PAY_TO_UPI')}
+                            className={fieldClass}
+                            placeholder="jjserow@okhdfcbank"
+                        />
+                        {errors.PAY_TO_UPI && <p className={errorClass}>{errors.PAY_TO_UPI}</p>}
+                    </label>
+                    <label className="block">
+                        <span className={labelClass}>Account holder name</span>
+                        <input
+                            value={form.PAY_TO_ACCOUNT_NAME ?? ''}
+                            onChange={set('PAY_TO_ACCOUNT_NAME')}
+                            className={fieldClass}
+                            placeholder="J.J. Serow Clothing Co."
+                        />
+                        {errors.PAY_TO_ACCOUNT_NAME && <p className={errorClass}>{errors.PAY_TO_ACCOUNT_NAME}</p>}
+                    </label>
+                    <label className="block">
+                        <span className={labelClass}>Account number</span>
+                        <input
+                            value={form.PAY_TO_ACCOUNT_NUMBER ?? ''}
+                            onChange={set('PAY_TO_ACCOUNT_NUMBER')}
+                            className={fieldClass}
+                            inputMode="numeric"
+                            maxLength={18}
+                        />
+                        {errors.PAY_TO_ACCOUNT_NUMBER && (
+                            <p className={errorClass}>{errors.PAY_TO_ACCOUNT_NUMBER}</p>
+                        )}
+                    </label>
+                    <label className="block">
+                        <span className={labelClass}>IFSC</span>
+                        <input
+                            value={form.PAY_TO_IFSC ?? ''}
+                            onChange={set('PAY_TO_IFSC')}
+                            className={`${fieldClass} uppercase`}
+                            placeholder="HDFC0001234"
+                            maxLength={11}
+                        />
+                        {errors.PAY_TO_IFSC && <p className={errorClass}>{errors.PAY_TO_IFSC}</p>}
+                    </label>
+                    <label className="block">
+                        <span className={labelClass}>Bank &amp; branch</span>
+                        <input
+                            value={form.PAY_TO_BANK_NAME ?? ''}
+                            onChange={set('PAY_TO_BANK_NAME')}
+                            className={fieldClass}
+                            placeholder="HDFC Bank, Ludhiana"
+                        />
+                        {errors.PAY_TO_BANK_NAME && <p className={errorClass}>{errors.PAY_TO_BANK_NAME}</p>}
+                    </label>
+                </div>
+            </div>
+
+            <div className={`${cardClass} mt-6`}>
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <h3 className="font-label text-[11px] font-semibold uppercase tracking-[0.2em]">
                         Volume tiers

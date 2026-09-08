@@ -33,13 +33,14 @@ class Order extends Model
 
     protected $fillable = [
         'code', 'status', 'total_sets', 'subtotal', 'gst', 'total',
-        'shipping_address', 'notes', 'placed_at',
+        'shipping_address', 'billing_profile', 'notes', 'placed_at',
     ];
 
     protected function casts(): array
     {
         return [
             'shipping_address' => 'array',
+            'billing_profile' => 'array',
             'subtotal' => 'decimal:2',
             'gst' => 'decimal:2',
             'total' => 'decimal:2',

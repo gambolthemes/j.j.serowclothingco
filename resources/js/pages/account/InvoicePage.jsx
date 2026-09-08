@@ -4,7 +4,7 @@ import { Helmet } from 'react-helmet';
 import { ArrowLeft, Printer } from 'lucide-react';
 import { LOGO_LOCKUP_URL } from '@/data/products';
 import { formatDate, getOrder } from '@/lib/api';
-import { COMPANY_EMAIL, COMPANY_LOCATION, GST_LABEL, inr, ratioLabel } from '@/lib/pricing';
+import { COMPANY_EMAIL, COMPANY_GSTIN, COMPANY_LOCATION, GST_LABEL, inr, ratioLabel } from '@/lib/pricing';
 import { useAuth } from '@/contexts/AuthContext';
 
 /**
@@ -25,6 +25,10 @@ const InvoicePage = () => {
     }, [code]);
 
     const address = order?.shipping_address;
+    const billing = order?.billing_profile;
+    const payTo = order?.pay_to;
+    // Once the money is in, "where to pay" is noise on the printed invoice.
+    const awaitingPayment = order?.status === 'placed';
 
     return (
         <div className="mx-auto max-w-4xl px-4 py-10 sm:px-8 print:max-w-none print:px-0 print:py-0">
@@ -67,6 +71,12 @@ const InvoicePage = () => {
                                 {COMPANY_LOCATION}
                                 <br />
                                 {COMPANY_EMAIL}
+                                {COMPANY_GSTIN ? (
+                                    <>
+                                        <br />
+                                        GSTIN {COMPANY_GSTIN}
+                                    </>
+                                ) : null}
                             </p>
                         </div>
                         <div className="text-right">
@@ -85,11 +95,28 @@ const InvoicePage = () => {
                             <p className="font-label text-[10px] uppercase tracking-[0.2em] text-foreground/55">
                                 Billed to
                             </p>
-                            <p className="mt-2 font-display text-lg font-bold">{user?.company}</p>
+                            {/* The billing identity frozen onto the order, not
+                                today's profile — an invoice records what was
+                                true when it was raised. */}
+                            <p className="mt-2 font-display text-lg font-bold">
+                                {billing?.legal_name || user?.company}
+                            </p>
                             <p className="text-sm text-foreground/75">
                                 {user?.name}
                                 <br />
                                 {user?.email}
+                                {billing?.gstin ? (
+                                    <>
+                                        <br />
+                                        GSTIN {billing.gstin}
+                                    </>
+                                ) : null}
+                                {billing?.pan ? (
+                                    <>
+                                        <br />
+                                        PAN {billing.pan}
+                                    </>
+                                ) : null}
                             </p>
                         </div>
                         <div>
@@ -175,6 +202,36 @@ const InvoicePage = () => {
                             </tbody>
                         </table>
                     </div>
+
+                    {awaitingPayment && payTo && (payTo.upi || payTo.account_number) && (
+                        <div className="mt-8 border border-foreground/50 p-5">
+                            <p className="font-label text-[10px] uppercase tracking-[0.2em] text-foreground/55">
+                                Pay in full to
+                            </p>
+                            <dl className="mt-3 grid gap-x-8 gap-y-2 text-sm sm:grid-cols-2">
+                                {[
+                                    ['UPI', payTo.upi],
+                                    ['Account name', payTo.account_name],
+                                    ['Account number', payTo.account_number],
+                                    ['IFSC', payTo.ifsc],
+                                    ['Bank', payTo.bank_name],
+                                ]
+                                    .filter(([, value]) => value)
+                                    .map(([term, value]) => (
+                                        <div key={term} className="flex flex-wrap gap-2">
+                                            <dt className="font-label text-[10px] uppercase tracking-[0.14em] text-foreground/55">
+                                                {term}
+                                            </dt>
+                                            <dd className="break-all font-label font-semibold">{value}</dd>
+                                        </div>
+                                    ))}
+                            </dl>
+                            <p className="mt-3 text-sm text-foreground/70">
+                                Quote <strong>{order.code}</strong> on the transfer, then share the receipt on
+                                WhatsApp.
+                            </p>
+                        </div>
+                    )}
 
                     <footer className="mt-8 border-t border-foreground/40 pt-4 font-label text-[10px] uppercase tracking-[0.14em] text-foreground/55">
                         100% advance • Status: {order.status_label} • This is a computer-generated invoice

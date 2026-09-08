@@ -14,6 +14,7 @@ const DEFAULTS = {
     WHATSAPP_NUMBER: '919876543210',
     COMPANY_EMAIL: 'orders@jjserow.in',
     COMPANY_LOCATION: 'Tirupur, Tamil Nadu, India',
+    COMPANY_GSTIN: '',
 };
 
 const setting = (key) => settings[key] ?? DEFAULTS[key];
@@ -27,6 +28,9 @@ export const STANDARD_SET_PIECES = Number(setting('STANDARD_SET_PIECES'));
 export const WHATSAPP_NUMBER = String(setting('WHATSAPP_NUMBER'));
 export const COMPANY_EMAIL = String(setting('COMPANY_EMAIL'));
 export const COMPANY_LOCATION = String(setting('COMPANY_LOCATION'));
+/* Our own GSTIN belongs on every tax invoice, so unlike the PAY_TO_* settings
+   it is public and rides along in the page payload. Blank until staff set it. */
+export const COMPANY_GSTIN = String(setting('COMPANY_GSTIN') ?? '');
 
 /** Just the town, for copy that reads "…made in {city}". */
 export const COMPANY_CITY = COMPANY_LOCATION.split(',')[0].trim();

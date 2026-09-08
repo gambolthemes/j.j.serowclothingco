@@ -3,6 +3,7 @@
 use App\Http\Controllers\Account\AddressController;
 use App\Http\Controllers\Account\CartController;
 use App\Http\Controllers\Account\OrderController;
+use App\Http\Controllers\Account\PaymentProfileController;
 use App\Http\Controllers\Account\ProfileController;
 use App\Http\Controllers\Admin\ColorController;
 use App\Http\Controllers\Admin\MediaController;
@@ -50,6 +51,11 @@ Route::get('/api/track/{code}', [TrackingController::class, 'show'])
 Route::middleware('auth')->prefix('api/account')->group(function () {
     Route::put('/profile', [ProfileController::class, 'update']);
     Route::put('/password', [ProfileController::class, 'updatePassword']);
+
+    // Billing identity and how the retailer pays. No card data — orders are
+    // settled by transfer, so there is no gateway and nothing to tokenise.
+    Route::get('/payment', [PaymentProfileController::class, 'show']);
+    Route::put('/payment', [PaymentProfileController::class, 'update']);
 
     Route::get('/addresses', [AddressController::class, 'index']);
     Route::post('/addresses', [AddressController::class, 'store']);

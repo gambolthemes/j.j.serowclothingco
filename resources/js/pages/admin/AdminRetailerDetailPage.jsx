@@ -163,6 +163,51 @@ const AdminRetailerDetailPage = () => {
                     )}
 
                     <h3 className="mt-10 font-label text-[11px] font-semibold uppercase tracking-[0.2em]">
+                        Billing &amp; payment
+                    </h3>
+                    {(() => {
+                        const profile = retailer.payment_profile;
+                        // Every field is optional, so a row is only worth
+                        // drawing if the retailer actually filled it in.
+                        const rows = profile
+                            ? [
+                                  ['Registered name', profile.legal_name],
+                                  ['GSTIN', profile.gstin],
+                                  ['PAN', profile.pan],
+                                  ['Pays by', profile.method_label],
+                                  ['UPI ID', profile.upi_id],
+                                  ['Account name', profile.bank_account_name],
+                                  ['Account number', profile.bank_account_number],
+                                  ['IFSC', profile.bank_ifsc],
+                                  ['Bank', profile.bank_name],
+                              ].filter(([, value]) => value)
+                            : [];
+
+                        if (rows.length === 0) {
+                            return (
+                                <p className="mt-4 border border-foreground/40 p-8 text-center text-sm text-foreground/60">
+                                    Nothing saved yet — ask for the GSTIN before raising an invoice.
+                                </p>
+                            );
+                        }
+
+                        return (
+                            <div className={`${cardClass} mt-4`}>
+                                <dl className="grid gap-x-8 gap-y-3 text-sm sm:grid-cols-2">
+                                    {rows.map(([term, value]) => (
+                                        <div key={term}>
+                                            <dt className="font-label text-[10px] uppercase tracking-[0.14em] text-foreground/55">
+                                                {term}
+                                            </dt>
+                                            <dd className="mt-1 break-all font-label font-semibold">{value}</dd>
+                                        </div>
+                                    ))}
+                                </dl>
+                            </div>
+                        );
+                    })()}
+
+                    <h3 className="mt-10 font-label text-[11px] font-semibold uppercase tracking-[0.2em]">
                         Saved addresses
                     </h3>
                     {retailer.addresses.length === 0 ? (

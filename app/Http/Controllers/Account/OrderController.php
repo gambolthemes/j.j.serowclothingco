@@ -39,6 +39,11 @@ class OrderController extends Controller
 
         return response()->json(['order' => $this->summary($order) + [
             'shipping_address' => $order->shipping_address,
+            'billing_profile' => $order->billing_profile,
+            // Where the advance goes. Sent with the order rather than in the
+            // public page payload, so the account details reach retailers and
+            // not every visitor's page source.
+            'pay_to' => Setting::payTo(),
             'notes' => $order->notes,
             'can_cancel' => in_array($order->status, self::CANCELLABLE, true),
             'items' => $order->items->map(fn ($item) => [
@@ -146,6 +151,10 @@ class OrderController extends Controller
                     'label', 'contact_name', 'phone', 'gstin',
                     'line1', 'line2', 'city', 'state', 'pincode',
                 ]),
+                // Snapshotted for the same reason as the address: the invoice
+                // has to keep the tax identity that was current on the day, not
+                // whatever the retailer edits into their profile next month.
+                'billing_profile' => $request->user()->paymentProfile?->invoiceSnapshot(),
                 'notes' => $data['notes'] ?? null,
                 'placed_at' => now(),
             ]);

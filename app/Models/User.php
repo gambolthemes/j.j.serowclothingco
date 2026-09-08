@@ -47,6 +47,12 @@ class User extends Authenticatable
         return $this->hasOne(Cart::class);
     }
 
+    /** Billing identity and how the advance arrives. No card data — see the model. */
+    public function paymentProfile(): HasOne
+    {
+        return $this->hasOne(PaymentProfile::class);
+    }
+
     /**
      * Password resets go out as our own Mailable rather than the framework's
      * stock notification, so the mail looks like the order mail retailers

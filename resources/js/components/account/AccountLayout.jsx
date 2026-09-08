@@ -6,6 +6,7 @@ const LINKS = [
     { to: '/account', label: 'Overview', end: true },
     { to: '/account/orders', label: 'Orders' },
     { to: '/account/addresses', label: 'Addresses' },
+    { to: '/account/payment', label: 'Payment' },
     { to: '/account/password', label: 'Password' },
 ];
 

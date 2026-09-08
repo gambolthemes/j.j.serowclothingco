@@ -47,6 +47,30 @@ class Setting extends Model
         'FACTORY_URL' => 'https://images.hostinger.com/2a655bec-48a0-42cb-835c-a58da604c65e.png',
         'COMPANY_EMAIL' => 'orders@jjserow.in',
         'COMPANY_LOCATION' => 'Tirupur, Tamil Nadu, India',
+        // On every tax invoice, so it is public by design.
+        'COMPANY_GSTIN' => '',
+
+        /*
+         * Where a retailer sends the 100% advance. Blank by default rather than
+         * filled with plausible-looking placeholders: a wrong account number on
+         * an invoice sends real money to the wrong place.
+         */
+        'PAY_TO_ACCOUNT_NAME' => '',
+        'PAY_TO_ACCOUNT_NUMBER' => '',
+        'PAY_TO_IFSC' => '',
+        'PAY_TO_BANK_NAME' => '',
+        'PAY_TO_UPI' => '',
+    ];
+
+    /**
+     * Settings kept out of the public page payload. The storefront shell is
+     * printed for guests too, and our own account number does not belong in the
+     * page source of a site anyone can open — it reaches signed-in retailers
+     * through the account and invoice endpoints instead.
+     */
+    public const PRIVATE_KEYS = [
+        'PAY_TO_ACCOUNT_NAME', 'PAY_TO_ACCOUNT_NUMBER', 'PAY_TO_IFSC',
+        'PAY_TO_BANK_NAME', 'PAY_TO_UPI',
     ];
 
     /**
@@ -64,6 +88,36 @@ class Setting extends Model
         );
 
         return array_replace(self::DEFAULTS, $stored);
+    }
+
+    /**
+     * Everything the public page shell may carry — see PRIVATE_KEYS.
+     *
+     * @return array<string, mixed>
+     */
+    public static function storefrontValues(): array
+    {
+        return array_diff_key(static::values(), array_flip(self::PRIVATE_KEYS));
+    }
+
+    /**
+     * Where the advance goes, for the account and invoice screens. Returned
+     * whole, blanks included, so the caller can decide what is worth showing.
+     *
+     * @return array<string, string>
+     */
+    public static function payTo(): array
+    {
+        $values = static::values();
+
+        return [
+            'account_name' => (string) $values['PAY_TO_ACCOUNT_NAME'],
+            'account_number' => (string) $values['PAY_TO_ACCOUNT_NUMBER'],
+            'ifsc' => (string) $values['PAY_TO_IFSC'],
+            'bank_name' => (string) $values['PAY_TO_BANK_NAME'],
+            'upi' => (string) $values['PAY_TO_UPI'],
+            'gstin' => (string) $values['COMPANY_GSTIN'],
+        ];
     }
 
     public static function get(string $key): mixed
