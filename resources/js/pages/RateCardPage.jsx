@@ -5,7 +5,9 @@ import PaymentTermsBox from "@/components/PaymentTermsBox";
 import { PRODUCTS, COLORS, LOGO_URL, colorBase } from "@/data/products";
 import {
   LEAD_DAYS,
+  LEAD_LABEL,
   MOQ_SETS,
+  TIERS,
   PRIVATE_LABEL_PER_PC,
   SAMPLE_SET_PRICE,
   discountedSetBase,
@@ -18,7 +20,7 @@ const RateCardPage = () => (
       <title>Wholesale Rate Card — J.J. Serow Clothing Co.</title>
       <meta
         name="description"
-        content="Full colorwise wholesale rate card: tier pricing for 10–29, 30–49 and 50+ sets across all styles and colors. 20 days estimate, 100% advance."
+        content={`Full colorwise wholesale rate card: tier pricing for ${TIERS.map((t) => t.label).join(", ")} across all styles and colors. ${LEAD_LABEL} estimate, 100% advance.`}
       />
     </Helmet>
 

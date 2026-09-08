@@ -65,12 +65,14 @@ const ProductPage = () => {
   const setSize = (s, v) =>
     setRatio((r) => ({ ...r, [s]: Math.max(0, Math.min(9, Number(v) || 0)) }));
 
+  const soldOut = stock === "out_of_stock";
+
   const onAdd = () => {
     if (!isAuthed) {
       navigate("/login");
       return;
     }
-    if (!valid) return;
+    if (!valid || soldOut) return;
     addItem({ productId: product.id, colorName, ratio, sets, sample, privateLabel });
     navigate("/cart");
   };
@@ -322,13 +324,18 @@ const ProductPage = () => {
                 <p className="mt-1 font-label text-[10px] uppercase tracking-[0.14em] text-foreground/50">
                   + GST as applicable • GST invoice auto-generated
                 </p>
+                {soldOut && (
+                  <p className="mt-2 font-label text-[10px] uppercase tracking-[0.14em] text-destructive">
+                    {colorName} is out of stock — pick another colour
+                  </p>
+                )}
               </div>
               <button
                 onClick={onAdd}
-                disabled={isAuthed && !valid}
+                disabled={isAuthed && (!valid || soldOut)}
                 className="flex h-12 items-center gap-2 bg-foreground px-6 font-label text-xs font-semibold uppercase tracking-[0.16em] text-background transition-transform hover:-translate-y-0.5 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-40"
               >
-                {isAuthed ? "Add to bulk cart" : "Login to order"}
+                {!isAuthed ? "Login to order" : soldOut ? "Out of stock" : "Add to bulk cart"}
               </button>
             </div>
 

@@ -1,12 +1,16 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import { LOGO_URL } from "@/data/products";
 import { useAuth } from "@/contexts/AuthContext";
+import { generalError } from "@/lib/api";
 
 const LoginPage = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
+  // Set by the reset screen after a password change, so the retailer lands here
+  // knowing the new password is live rather than wondering if it saved.
+  const notice = useLocation().state?.notice;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -19,8 +23,14 @@ const LoginPage = () => {
     try {
       await login(email, password);
       navigate("/catalog");
-    } catch {
-      setError("Invalid email or password. New retailer? Create an account below.");
+    } catch (err) {
+      // A 429 is the throttle, not a bad password — telling someone to check
+      // their spelling when the answer is "wait a minute" only wastes tries.
+      setError(
+        err?.response?.status === 429
+          ? generalError(err, "Too many attempts. Wait a minute and try again.")
+          : "Invalid email or password. New retailer? Create an account below."
+      );
     } finally {
       setBusy(false);
     }
@@ -37,6 +47,12 @@ const LoginPage = () => {
       <p className="mt-2 text-center font-label text-[10px] uppercase tracking-[0.2em] text-foreground/55">
         Wholesale prices are for registered retailers
       </p>
+
+      {notice && (
+        <p className="mt-6 w-full border border-foreground/40 bg-card px-4 py-3 text-sm text-foreground/80">
+          {notice}
+        </p>
+      )}
 
       <form onSubmit={onSubmit} className="mt-8 w-full border border-foreground bg-card p-6">
         <label className="block">
@@ -73,6 +89,14 @@ const LoginPage = () => {
         >
           {busy ? "Signing in…" : "Sign in"}
         </button>
+        <p className="mt-4 text-center">
+          <Link
+            to="/forgot-password"
+            className="font-label text-[10px] uppercase tracking-[0.16em] text-foreground/60 underline underline-offset-4"
+          >
+            Forgot your password?
+          </Link>
+        </p>
       </form>
       <p className="mt-6 text-sm text-foreground/70">
         New retailer?{" "}

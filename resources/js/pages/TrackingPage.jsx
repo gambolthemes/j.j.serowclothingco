@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import { Check, Search } from "lucide-react";
 import { TwentyDaysBadge } from "@/components/Badges";
-import { LEAD_DAYS } from "@/lib/pricing";
+import { LEAD_DAYS, LEAD_LABEL } from "@/lib/pricing";
 import { formatDate, trackOrder } from "@/lib/api";
 
 /* What each production stage means to the retailer. Keyed by the status the
@@ -75,11 +75,11 @@ const TrackingPage = () => {
         <title>Track Your Bulk Order — J.J. Serow Clothing Co.</title>
         <meta
           name="description"
-          content="Track your set-wise bulk order through payment, cutting, stitching, QC and dispatch — on a 20 days estimate."
+          content={`Track your set-wise bulk order through payment, cutting, stitching, QC and dispatch — on a ${LEAD_LABEL} estimate.`}
         />
       </Helmet>
       <span className="vertical-label absolute left-1 top-24 hidden font-label text-[10px] uppercase tracking-[0.35em] text-foreground/40 lg:block">
-        Tracking — 20 days
+        Tracking — {LEAD_LABEL}
       </span>
 
       <div className="mx-auto max-w-4xl px-4 py-14 sm:px-8">
@@ -88,7 +88,7 @@ const TrackingPage = () => {
         </p>
         <h1 className="mt-4 font-display text-5xl font-black tracking-tight">Where is my order?</h1>
         <p className="mt-4 max-w-xl text-sm leading-relaxed text-foreground/70">
-          Enter the order code from your WhatsApp confirmation. Production runs on a 20-day estimate
+          Enter the order code from your WhatsApp confirmation. Production runs on a {LEAD_DAYS}-day estimate
           from payment confirmation.
         </p>
 

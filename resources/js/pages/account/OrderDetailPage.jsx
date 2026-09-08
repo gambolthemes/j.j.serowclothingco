@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
-import { ArrowLeft } from 'lucide-react';
-import { formatDate, getOrder } from '@/lib/api';
-import { inr, ratioLabel } from '@/lib/pricing';
+import { ArrowLeft, FileText, XCircle } from 'lucide-react';
+import { cancelOrder, formatDate, generalError, getOrder } from '@/lib/api';
+import { GST_LABEL, LEAD_LABEL, inr, ratioLabel } from '@/lib/pricing';
 import { cardClass } from '@/components/account/ui';
 
 const OrderDetailPage = () => {
     const { code } = useParams();
     const [order, setOrder] = useState(null);
     const [error, setError] = useState('');
+    const [cancelling, setCancelling] = useState(false);
 
     useEffect(() => {
         setOrder(null);
@@ -18,6 +19,23 @@ const OrderDetailPage = () => {
             .then(setOrder)
             .catch(() => setError('That order is not on your account.'));
     }, [code]);
+
+    const cancel = async () => {
+        if (!window.confirm(`Cancel order ${code}? This cannot be undone here.`)) return;
+
+        setCancelling(true);
+        setError('');
+        try {
+            await cancelOrder(code);
+            // Refetched because cancelling also flips can_cancel and adds a
+            // history row that the cancel response does not carry.
+            setOrder(await getOrder(code));
+        } catch (err) {
+            setError(generalError(err, 'Could not cancel that order.'));
+        } finally {
+            setCancelling(false);
+        }
+    };
 
     const address = order?.shipping_address;
 
@@ -56,7 +74,7 @@ const OrderDetailPage = () => {
                                 Placed {formatDate(order.placed_at)} • {order.total_sets} sets
                             </p>
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex flex-wrap items-center gap-3">
                             <span className="border border-foreground px-3 py-2 font-label text-[10px] uppercase tracking-[0.12em]">
                                 {order.status_label}
                             </span>
@@ -66,6 +84,21 @@ const OrderDetailPage = () => {
                             >
                                 Track
                             </Link>
+                            <Link
+                                to={`/account/orders/${order.code}/invoice`}
+                                className="flex items-center gap-1.5 font-label text-[10px] uppercase tracking-[0.14em] underline underline-offset-4"
+                            >
+                                <FileText className="h-3 w-3" /> Invoice
+                            </Link>
+                            {order.can_cancel && (
+                                <button
+                                    onClick={cancel}
+                                    disabled={cancelling}
+                                    className="flex items-center gap-1.5 font-label text-[10px] uppercase tracking-[0.14em] text-foreground/55 underline underline-offset-4 hover:text-destructive disabled:opacity-50"
+                                >
+                                    <XCircle className="h-3 w-3" /> {cancelling ? 'Cancelling…' : 'Cancel order'}
+                                </button>
+                            )}
                         </div>
                     </div>
 
@@ -156,7 +189,7 @@ const OrderDetailPage = () => {
                                     <span className="font-label font-semibold">{inr(order.subtotal)}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-foreground/70">GST (5%)</span>
+                                    <span className="text-foreground/70">{GST_LABEL}</span>
                                     <span className="font-label font-semibold">{inr(order.gst)}</span>
                                 </div>
                                 <div className="flex justify-between border-t border-foreground/40 pt-3">
@@ -165,7 +198,7 @@ const OrderDetailPage = () => {
                                 </div>
                             </div>
                             <p className="mt-3 font-label text-[10px] uppercase tracking-[0.14em] text-foreground/50">
-                                100% advance • 20 days estimate
+                                100% advance • {LEAD_LABEL} estimate
                             </p>
                         </div>
                     </div>

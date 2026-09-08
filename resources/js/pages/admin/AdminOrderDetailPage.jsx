@@ -2,8 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import { ArrowLeft, Check } from 'lucide-react';
-import { ORDER_STATUSES, adminGetOrder, adminUpdateOrderStatus, formatDate } from '@/lib/api';
-import { inr, ratioLabel } from '@/lib/pricing';
+import {
+    ORDER_STATUSES,
+    adminGetOrder,
+    adminUpdateOrderItems,
+    adminUpdateOrderStatus,
+    formatDate,
+    generalError,
+} from '@/lib/api';
+import { GST_LABEL, inr, ratioLabel } from '@/lib/pricing';
 import { cardClass, fieldClass, labelClass, primaryButtonClass } from '@/components/account/ui';
 
 const AdminOrderDetailPage = () => {
@@ -14,6 +21,9 @@ const AdminOrderDetailPage = () => {
     const [notes, setNotes] = useState('');
     const [saved, setSaved] = useState(false);
     const [busy, setBusy] = useState(false);
+    const [sets, setSets] = useState({});
+    const [removed, setRemoved] = useState([]);
+    const [savingLines, setSavingLines] = useState(false);
 
     useEffect(() => {
         setOrder(null);
@@ -27,13 +37,56 @@ const AdminOrderDetailPage = () => {
             .catch(() => setError('No order with that code.'));
     }, [code]);
 
+    const setLineSets = (id, value) =>
+        setSets((s) => ({ ...s, [id]: Math.max(1, Number(value) || 1) }));
+
+    const toggleRemoved = (id) =>
+        setRemoved((r) => (r.includes(id) ? r.filter((x) => x !== id) : [...r, id]));
+
+    const resetLines = () => {
+        setSets({});
+        setRemoved([]);
+    };
+
+    // Something to save only once a quantity actually differs or a line is out.
+    const dirty =
+        removed.length > 0 ||
+        (order?.items ?? []).some((i) => sets[i.id] !== undefined && sets[i.id] !== i.sets);
+
+    const saveLines = async () => {
+        const keep = order.items.filter((i) => !removed.includes(i.id));
+
+        if (!keep.length) {
+            setError('An order needs at least one line — cancel it instead.');
+            return;
+        }
+
+        setSavingLines(true);
+        setError('');
+        try {
+            setOrder(
+                await adminUpdateOrderItems(code, {
+                    items: keep.map((i) => ({ id: i.id, sets: sets[i.id] ?? i.sets })),
+                    removed,
+                })
+            );
+            resetLines();
+        } catch (err) {
+            setError(generalError(err, 'Could not save those lines.'));
+        } finally {
+            setSavingLines(false);
+        }
+    };
+
     const save = async (e) => {
         e.preventDefault();
         setBusy(true);
         setSaved(false);
         try {
-            const updated = await adminUpdateOrderStatus(code, { status, notes });
-            setOrder((prev) => ({ ...prev, ...updated }));
+            await adminUpdateOrderStatus(code, { status, notes });
+            // Refetched rather than merged: the save response carries the order
+            // but not the new history row it just created.
+            setOrder(await adminGetOrder(code));
             setSaved(true);
         } catch {
             setError('Could not save that change.');
@@ -133,8 +186,24 @@ const AdminOrderDetailPage = () => {
                         </div>
                     </form>
 
-                    <div className="mt-8 overflow-x-auto border-y border-foreground/60">
-                        <table className="w-full min-w-[40rem] text-left">
+                    <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
+                        <h3 className="font-label text-[11px] font-semibold uppercase tracking-[0.2em]">
+                            Lines
+                        </h3>
+                        {dirty && (
+                            <div className="flex items-center gap-3">
+                                <button onClick={saveLines} disabled={savingLines} className={primaryButtonClass}>
+                                    {savingLines ? 'Repricing…' : 'Save lines'}
+                                </button>
+                                <button onClick={resetLines} className="font-label text-[10px] uppercase tracking-[0.14em] underline underline-offset-4">
+                                    Discard
+                                </button>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="mt-3 overflow-x-auto border-y border-foreground/60">
+                        <table className="w-full min-w-[44rem] text-left">
                             <thead>
                                 <tr className="border-b border-foreground/30 font-label text-[10px] uppercase tracking-[0.16em] text-foreground/55">
                                     <th className="py-3 pr-4 font-normal">Style</th>
@@ -142,37 +211,95 @@ const AdminOrderDetailPage = () => {
                                     <th className="py-3 pr-4 font-normal">Ratio</th>
                                     <th className="py-3 pr-4 font-normal">Sets</th>
                                     <th className="py-3 pr-4 text-right font-normal">Per set</th>
-                                    <th className="py-3 text-right font-normal">Line total</th>
+                                    <th className="py-3 pr-4 text-right font-normal">Line total</th>
+                                    <th className="py-3" />
                                 </tr>
                             </thead>
                             <tbody>
-                                {order.items.map((item) => (
-                                    <tr key={item.id} className="border-b border-foreground/20 last:border-b-0">
-                                        <td className="py-4 pr-4">
-                                            <p className="font-display text-base font-bold">{item.product_name}</p>
-                                            {(item.private_label || item.sample) && (
-                                                <p className="mt-1 font-label text-[10px] uppercase tracking-[0.12em] text-foreground/50">
-                                                    {item.private_label ? 'private label' : ''}
-                                                    {item.private_label && item.sample ? ' • ' : ''}
-                                                    {item.sample ? '+sample set' : ''}
-                                                </p>
-                                            )}
-                                        </td>
-                                        <td className="py-4 pr-4 text-sm text-foreground/70">{item.color_name}</td>
-                                        <td className="py-4 pr-4 font-label text-[11px] tracking-[0.08em] text-foreground/70">
-                                            {ratioLabel(item.ratio)}
-                                        </td>
-                                        <td className="py-4 pr-4 text-sm text-foreground/70">{item.sets}</td>
-                                        <td className="py-4 pr-4 text-right text-sm text-foreground/70">
-                                            {inr(item.per_set_price)}
-                                        </td>
-                                        <td className="py-4 text-right font-display text-lg font-black">
-                                            {inr(item.line_total)}
-                                        </td>
-                                    </tr>
-                                ))}
+                                {order.items.map((item) => {
+                                    const dropped = removed.includes(item.id);
+                                    return (
+                                        <tr
+                                            key={item.id}
+                                            className={`border-b border-foreground/20 last:border-b-0 ${
+                                                dropped ? 'opacity-40' : ''
+                                            }`}
+                                        >
+                                            <td className="py-4 pr-4">
+                                                <p className="font-display text-base font-bold">{item.product_name}</p>
+                                                {(item.private_label || item.sample) && (
+                                                    <p className="mt-1 font-label text-[10px] uppercase tracking-[0.12em] text-foreground/50">
+                                                        {item.private_label ? 'private label' : ''}
+                                                        {item.private_label && item.sample ? ' • ' : ''}
+                                                        {item.sample ? '+sample set' : ''}
+                                                    </p>
+                                                )}
+                                            </td>
+                                            <td className="py-4 pr-4 text-sm text-foreground/70">{item.color_name}</td>
+                                            <td className="py-4 pr-4 font-label text-[11px] tracking-[0.08em] text-foreground/70">
+                                                {ratioLabel(item.ratio)}
+                                            </td>
+                                            <td className="py-4 pr-4">
+                                                <input
+                                                    type="number"
+                                                    min={1}
+                                                    disabled={dropped}
+                                                    value={sets[item.id] ?? item.sets}
+                                                    onChange={(e) => setLineSets(item.id, e.target.value)}
+                                                    className="h-9 w-20 border border-foreground/60 bg-transparent px-2 font-label text-sm focus:outline-none focus:ring-1 focus:ring-foreground disabled:opacity-50"
+                                                />
+                                            </td>
+                                            <td className="py-4 pr-4 text-right text-sm text-foreground/70">
+                                                {inr(item.per_set_price)}
+                                            </td>
+                                            <td className="py-4 pr-4 text-right font-display text-lg font-black">
+                                                {inr(item.line_total)}
+                                            </td>
+                                            <td className="py-4 text-right">
+                                                <button
+                                                    onClick={() => toggleRemoved(item.id)}
+                                                    className="font-label text-[10px] uppercase tracking-[0.14em] text-foreground/55 underline underline-offset-4 hover:text-destructive"
+                                                >
+                                                    {dropped ? 'Keep' : 'Remove'}
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
                             </tbody>
                         </table>
+                    </div>
+                    <p className="mt-2 font-label text-[10px] uppercase tracking-[0.14em] text-foreground/45">
+                        Saving re-prices every line from today's catalog and recalculates the invoice.
+                    </p>
+
+                    <div className={`${cardClass} mt-8`}>
+                        <h3 className="font-label text-[11px] font-semibold uppercase tracking-[0.2em]">
+                            Stage history
+                        </h3>
+                        {order.history?.length ? (
+                            <ol className="mt-4 border-l border-foreground/30 pl-5">
+                                {order.history.map((event) => (
+                                    <li key={event.id} className="relative pb-5 last:pb-0">
+                                        <span
+                                            aria-hidden
+                                            className="absolute -left-[1.6rem] top-1 h-2.5 w-2.5 border border-foreground bg-accent"
+                                        />
+                                        <p className="font-display text-base font-bold">
+                                            {event.from_label ? `${event.from_label} → ${event.to_label}` : event.to_label}
+                                        </p>
+                                        <p className="mt-1 font-label text-[10px] uppercase tracking-[0.14em] text-foreground/55">
+                                            {formatDate(event.created_at)} • {event.actor_name ?? 'system'}
+                                        </p>
+                                        {event.note && (
+                                            <p className="mt-1 text-sm text-foreground/70">{event.note}</p>
+                                        )}
+                                    </li>
+                                ))}
+                            </ol>
+                        ) : (
+                            <p className="mt-3 text-sm text-foreground/60">Nothing recorded yet.</p>
+                        )}
                     </div>
 
                     <div className="mt-8 grid gap-6 lg:grid-cols-2">
@@ -217,7 +344,7 @@ const AdminOrderDetailPage = () => {
                                     <span className="font-label font-semibold">{inr(order.subtotal)}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-foreground/70">GST (5%)</span>
+                                    <span className="text-foreground/70">{GST_LABEL}</span>
                                     <span className="font-label font-semibold">{inr(order.gst)}</span>
                                 </div>
                                 <div className="flex justify-between border-t border-foreground/40 pt-3">

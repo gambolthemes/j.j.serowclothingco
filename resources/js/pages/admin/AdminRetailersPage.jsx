@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
-import { Search } from 'lucide-react';
-import { adminListRetailers, formatDate } from '@/lib/api';
+import { Download, Search } from 'lucide-react';
+import { adminExportUrl, adminListRetailers, formatDate } from '@/lib/api';
 import { inr } from '@/lib/pricing';
 
 const AdminRetailersPage = () => {
@@ -39,26 +39,35 @@ const AdminRetailersPage = () => {
                     Registered retailers{meta ? ` (${meta.total})` : ''}
                 </h2>
 
-                <form
-                    onSubmit={(e) => {
-                        e.preventDefault();
-                        setParams(search.trim() ? { q: search.trim() } : {});
-                    }}
-                    className="flex gap-2"
-                >
-                    <input
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        placeholder="Company, buyer, email…"
-                        className="h-11 w-56 border border-foreground/60 bg-transparent px-3 text-sm focus:outline-none focus:ring-1 focus:ring-foreground"
-                    />
-                    <button
-                        type="submit"
+                <div className="flex flex-wrap gap-2">
+                    <a
+                        href={adminExportUrl('retailers', { q })}
                         className="flex h-11 items-center gap-2 border border-foreground/60 px-3 font-label text-[11px] uppercase tracking-[0.12em] hover:bg-secondary"
                     >
-                        <Search className="h-3.5 w-3.5" />
-                    </button>
-                </form>
+                        <Download className="h-3.5 w-3.5" /> CSV
+                    </a>
+
+                    <form
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            setParams(search.trim() ? { q: search.trim() } : {});
+                        }}
+                        className="flex gap-2"
+                    >
+                        <input
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            placeholder="Company, buyer, email…"
+                            className="h-11 w-56 border border-foreground/60 bg-transparent px-3 text-sm focus:outline-none focus:ring-1 focus:ring-foreground"
+                        />
+                        <button
+                            type="submit"
+                            className="flex h-11 items-center gap-2 border border-foreground/60 px-3 font-label text-[11px] uppercase tracking-[0.12em] hover:bg-secondary"
+                        >
+                            <Search className="h-3.5 w-3.5" />
+                        </button>
+                    </form>
+                </div>
             </div>
 
             {error && (
@@ -116,14 +125,12 @@ const AdminRetailersPage = () => {
                                         {inr(retailer.orders_value)}
                                     </td>
                                     <td className="py-4 text-right">
-                                        {retailer.orders_count > 0 && (
-                                            <Link
-                                                to={`/admin/orders?q=${encodeURIComponent(retailer.email)}`}
-                                                className="font-label text-[10px] uppercase tracking-[0.14em] underline underline-offset-4"
-                                            >
-                                                Orders
-                                            </Link>
-                                        )}
+                                        <Link
+                                            to={`/admin/retailers/${retailer.id}`}
+                                            className="font-label text-[10px] uppercase tracking-[0.14em] underline underline-offset-4"
+                                        >
+                                            Open
+                                        </Link>
                                     </td>
                                 </tr>
                             ))}

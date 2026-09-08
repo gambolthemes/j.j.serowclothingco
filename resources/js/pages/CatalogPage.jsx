@@ -5,7 +5,7 @@ import { Lock } from "lucide-react";
 import Reveal from "@/components/Reveal";
 import { TwentyDaysBadge, StockBadge } from "@/components/Badges";
 import { PRODUCTS, COLORS, minBase } from "@/data/products";
-import { inr, MOQ_SETS } from "@/lib/pricing";
+import { LEAD_DAYS, LEAD_LABEL, MOQ_LABEL, MOQ_SETS, inr } from "@/lib/pricing";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   Select,
@@ -42,7 +42,7 @@ const CatalogPage = () => {
         <title>Wholesale Catalog — J.J. Serow Clothing Co.</title>
         <meta
           name="description"
-          content="Shirts and T-shirts in 5 colorways, sold bulk and set wise only. MOQ 10 sets per color, colorwise price and stock, 20 days estimate on every style."
+          content={`Shirts and T-shirts in ${COLORS.length} colorways, sold bulk and set wise only. ${MOQ_LABEL} per color, colorwise price and stock, ${LEAD_LABEL} estimate on every style.`}
         />
       </Helmet>
       <span className="vertical-label absolute left-1 top-24 hidden font-label text-[10px] uppercase tracking-[0.35em] text-foreground/40 lg:block">
@@ -101,7 +101,7 @@ const CatalogPage = () => {
           <div className="mt-16 border border-foreground/50 p-10 text-center">
             <p className="font-display text-2xl font-bold">Nothing in stock for that filter.</p>
             <p className="mt-2 text-sm text-foreground/60">
-              Try another color — made-to-order colors still run on the 20-day estimate.
+              Try another color — made-to-order colors still run on the {LEAD_DAYS}-day estimate.
             </p>
           </div>
         ) : (

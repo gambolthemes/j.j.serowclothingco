@@ -1,0 +1,4 @@
+# Admin image uploads: content, not code. Backed up with the database, not git.
+# The directory itself is tracked so a fresh deploy has somewhere to write.
+*
+!.gitignore

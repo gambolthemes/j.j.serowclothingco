@@ -1,7 +1,14 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { LOGO_URL } from "@/data/products";
-import { WHATSAPP_NUMBER } from "@/lib/pricing";
+import {
+  COMPANY_EMAIL,
+  COMPANY_LOCATION,
+  LEAD_DAYS,
+  LEAD_LABEL,
+  WHATSAPP_NUMBER,
+  whatsappDisplay,
+} from "@/lib/pricing";
 
 const Footer = () => (
   <footer className="border-t border-foreground bg-foreground text-background print:hidden">
@@ -16,7 +23,7 @@ const Footer = () => (
         </div>
         <p className="mt-5 max-w-sm text-sm leading-relaxed text-background/70">
           Bulk. Set wise. Built to last. Shirts and T-shirts manufactured for retailers — no single
-          pieces, no retail. Every order runs on a 20-day production estimate.
+          pieces, no retail. Every order runs on a {LEAD_DAYS}-day production estimate.
         </p>
       </div>
       <div className="md:col-span-3">
@@ -32,10 +39,10 @@ const Footer = () => (
         <p className="font-label text-[10px] uppercase tracking-[0.25em] text-background/50">Wholesale Desk</p>
         <div className="mt-4 flex flex-col gap-2.5 text-sm text-background/80">
           <a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noreferrer" className="hover:text-accent">
-            WhatsApp: +91 98765 43210
+            WhatsApp: {whatsappDisplay()}
           </a>
-          <span>orders@jjserow.in</span>
-          <span>Tirupur, Tamil Nadu, India</span>
+          <span>{COMPANY_EMAIL}</span>
+          <span>{COMPANY_LOCATION}</span>
           <span className="font-label text-[10px] uppercase tracking-[0.18em] text-background/50">
             100% advance • GST invoice on every order
           </span>
@@ -45,7 +52,7 @@ const Footer = () => (
     <div className="border-t border-background/20">
       <div className="mx-auto flex max-w-[90rem] flex-col gap-2 px-4 py-5 font-label text-[10px] uppercase tracking-[0.2em] text-background/50 sm:flex-row sm:items-center sm:justify-between sm:px-8">
         <span>© {new Date().getFullYear()} J.J. Serow Clothing Co.</span>
-        <span>Bulk only • Set wise only • 20 days estimate</span>
+        <span>Bulk only • Set wise only • {LEAD_LABEL} estimate</span>
       </div>
     </div>
   </footer>

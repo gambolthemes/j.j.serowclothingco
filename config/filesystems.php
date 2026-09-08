@@ -47,6 +47,25 @@ return [
             'report' => false,
         ],
 
+        /*
+         * Product and storefront imagery uploaded from /admin.
+         *
+         * Deliberately not the `public` disk: that one lives in storage/ and is
+         * only reachable through a public/storage symlink, which is one more
+         * deploy step to forget and the first thing to break on a host that
+         * disallows symlinks. Writing straight into the web root costs the
+         * indirection but means an upload is servable the moment it lands.
+         * public/uploads is gitignored.
+         */
+        'uploads' => [
+            'driver' => 'local',
+            'root' => public_path('uploads'),
+            'url' => '/uploads',
+            'visibility' => 'public',
+            'throw' => false,
+            'report' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

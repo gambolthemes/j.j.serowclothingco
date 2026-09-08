@@ -2,6 +2,24 @@ import axios from 'axios';
 
 const unwrap = (key) => (response) => response.data[key];
 
+/* ---- password reset ----
+   Guest endpoints, unlike everything below them. Both are throttled server
+   side, so callers should expect a 429 as well as the usual 422. */
+
+/** Always resolves for a well-formed address, whether or not it is registered. */
+export const requestPasswordReset = (email) =>
+    axios.post('/auth/forgot-password', { email }).then(unwrap('status'));
+
+export const resetPassword = ({ token, email, password }) =>
+    axios
+        .post('/auth/reset-password', {
+            token,
+            email,
+            password,
+            password_confirmation: password,
+        })
+        .then(unwrap('status'));
+
 export const updateProfile = (payload) =>
     axios.put('/api/account/profile', payload).then(unwrap('user'));
 
@@ -17,6 +35,16 @@ export const updateAddress = (id, payload) =>
 
 export const deleteAddress = (id) => axios.delete(`/api/account/addresses/${id}`);
 
+/* ---- cart ----
+   The draft cart lives against the account so it follows the retailer between
+   devices; CartContext keeps a localStorage copy as well for guests and for
+   surviving a reload before the pull lands. */
+
+export const getCart = () => axios.get('/api/account/cart').then(unwrap('items'));
+
+export const saveCart = (items) =>
+    axios.put('/api/account/cart', { items }).then(unwrap('items'));
+
 export const listOrders = () => axios.get('/api/account/orders').then(unwrap('orders'));
 
 export const getOrder = (code) =>
@@ -24,6 +52,11 @@ export const getOrder = (code) =>
 
 export const placeOrder = (payload) =>
     axios.post('/api/account/orders', payload).then(unwrap('order'));
+
+export const cancelOrder = (code, reason) =>
+    axios
+        .post(`/api/account/orders/${encodeURIComponent(code)}/cancel`, { reason })
+        .then(unwrap('order'));
 
 export const trackOrder = (code) =>
     axios.get(`/api/track/${encodeURIComponent(code)}`).then(unwrap('order'));
@@ -53,8 +86,72 @@ export const adminGetOrder = (code) =>
 export const adminUpdateOrderStatus = (code, payload) =>
     axios.put(`/api/admin/orders/${encodeURIComponent(code)}/status`, payload).then(unwrap('order'));
 
+export const adminUpdateOrderItems = (code, payload) =>
+    axios.put(`/api/admin/orders/${encodeURIComponent(code)}/items`, payload).then(unwrap('order'));
+
 export const adminListRetailers = (params) =>
     axios.get('/api/admin/retailers', { params }).then((r) => r.data);
+
+export const adminGetRetailer = (id) =>
+    axios.get(`/api/admin/retailers/${id}`).then(unwrap('retailer'));
+
+export const adminSetRole = (id, isAdmin) =>
+    axios.put(`/api/admin/retailers/${id}/role`, { is_admin: isAdmin }).then((r) => r.data);
+
+export const adminListProducts = () => axios.get('/api/admin/products').then((r) => r.data);
+
+export const adminCreateProduct = (payload) =>
+    axios.post('/api/admin/products', payload).then(unwrap('product'));
+
+export const adminUpdateProduct = (id, payload) =>
+    axios.put(`/api/admin/products/${id}`, payload).then(unwrap('product'));
+
+export const adminDeleteProduct = (id) => axios.delete(`/api/admin/products/${id}`);
+
+export const adminListColors = () => axios.get('/api/admin/colors').then(unwrap('colors'));
+
+export const adminCreateColor = (payload) =>
+    axios.post('/api/admin/colors', payload).then(unwrap('colors'));
+
+export const adminUpdateColor = (id, payload) =>
+    axios.put(`/api/admin/colors/${id}`, payload).then(unwrap('colors'));
+
+export const adminDeleteColor = (id) =>
+    axios.delete(`/api/admin/colors/${id}`).then(unwrap('colors'));
+
+/**
+ * Uploads one product or storefront photo and returns the path to store on the
+ * record — a site-relative /uploads/… string, not an absolute URL, so the
+ * images keep working if the site ever moves domain.
+ */
+export const adminUploadImage = (file, onProgress) => {
+    const body = new FormData();
+    body.append('file', file);
+
+    return axios
+        .post('/api/admin/media', body, {
+            onUploadProgress: (e) =>
+                onProgress?.(e.total ? Math.round((e.loaded / e.total) * 100) : 0),
+        })
+        .then(unwrap('url'));
+};
+
+export const adminGetSettings = () => axios.get('/api/admin/settings').then((r) => r.data);
+
+export const adminSaveSettings = (payload) =>
+    axios.put('/api/admin/settings', payload).then(unwrap('settings'));
+
+/**
+ * CSV downloads go through a plain navigation rather than axios — the response
+ * is a file, and letting the browser handle it keeps the Save dialog native.
+ */
+export const adminExportUrl = (what, params = {}) => {
+    const query = new URLSearchParams(
+        Object.entries(params).filter(([, v]) => v)
+    ).toString();
+
+    return `/api/admin/${what}/export${query ? `?${query}` : ''}`;
+};
 
 /**
  * Flattens a Laravel 422 body into { field: "first message" } so a form can

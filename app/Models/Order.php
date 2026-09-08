@@ -57,6 +57,11 @@ class Order extends Model
         return $this->hasMany(OrderItem::class);
     }
 
+    public function statusEvents(): HasMany
+    {
+        return $this->hasMany(OrderStatusEvent::class)->orderByDesc('created_at');
+    }
+
     public function statusLabel(): string
     {
         return self::STATUSES[$this->status] ?? $this->status;
