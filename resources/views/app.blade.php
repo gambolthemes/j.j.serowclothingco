@@ -8,7 +8,7 @@
         <title>J.J. SEROW — Wholesale clothing in sets, from Ludhiana</title>
         <meta name="description" content="B2B wholesale clothing. One set is 4 pieces (M, L, XL, XXL). Choose your colours, pay in full, ship in 20 days. Minimum 8 sets. Made in Ludhiana, shipped across India.">
 
-        <link rel="icon" href="/images/mark.jpg">
+        <link rel="icon" href="/images/mark.svg">
 
         <script>
             window.__AUTH_USER__ = @json($authUser);

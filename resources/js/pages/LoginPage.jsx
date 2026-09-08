@@ -32,7 +32,7 @@ const LoginPage = () => {
         <title>Client Login — J.J. Serow Clothing Co.</title>
         <meta name="description" content="Retailer login for wholesale pricing, set-wise ordering and order tracking." />
       </Helmet>
-      <img src={LOGO_URL} alt="J.J. Serow goat head logo" className="h-16 w-16 border border-foreground/60 object-cover" />
+      <img src={LOGO_URL} alt="J.J. Serow goat head logo" className="h-16 w-16 border border-foreground/60 object-contain p-1" />
       <h1 className="mt-6 font-display text-4xl font-black tracking-tight">Client Login</h1>
       <p className="mt-2 text-center font-label text-[10px] uppercase tracking-[0.2em] text-foreground/55">
         Wholesale prices are for registered retailers

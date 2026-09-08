@@ -36,7 +36,7 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     const value = useMemo(
-        () => ({ user, isAuthed: Boolean(user), login, signup, logout }),
+        () => ({ user, isAuthed: Boolean(user), login, signup, logout, setUser }),
         [user, login, signup, logout],
     );
 

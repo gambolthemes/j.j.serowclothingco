@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { LogOut, Menu, ShoppingBag, X } from "lucide-react";
+import { LogOut, Menu, ShieldCheck, ShoppingBag, User, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
-import { LOGO_URL } from "@/data/products";
+import { LOGO_LOCKUP_URL } from "@/data/products";
 
 const NAV = [
   { to: "/catalog", label: "Catalog" },
@@ -30,14 +30,12 @@ const Header = () => {
       </div>
       <div className="border-b border-foreground/60 bg-background/95 backdrop-blur">
         <div className="mx-auto flex max-w-[90rem] items-center justify-between gap-4 px-4 py-3 sm:px-8">
-          <Link to="/" className="flex items-center gap-3">
-            <img src={LOGO_URL} alt="J.J. Serow goat head logo" className="h-10 w-10 border border-foreground/60 object-cover" />
-            <span className="leading-none">
-              <span className="block font-display text-xl font-black tracking-tight">J.J. SEROW</span>
-              <span className="mt-1 block font-label text-[9px] uppercase tracking-[0.3em] text-foreground/60">
-                Clothing Co.
-              </span>
-            </span>
+          <Link to="/" className="flex items-center">
+            <img
+              src={LOGO_LOCKUP_URL}
+              alt="J.J. Serow Clothing Co."
+              className="h-10 w-auto sm:h-12"
+            />
           </Link>
 
           <nav className="hidden items-center gap-7 md:flex">
@@ -62,17 +60,37 @@ const Header = () => {
               )}
             </Link>
             {isAuthed ? (
-              <button
-                onClick={() => {
-                  logout();
-                  navigate("/");
-                }}
-                className="hidden h-10 items-center gap-2 bg-foreground px-3 font-label text-[11px] uppercase tracking-[0.14em] text-background transition-opacity hover:opacity-85 sm:flex"
-                title="Log out"
-              >
-                <LogOut className="h-4 w-4" strokeWidth={2} />
-                {user?.name ? user.name.split(" ")[0] : "Account"}
-              </button>
+              <div className="hidden items-center gap-2 sm:flex">
+                {user?.is_admin && (
+                  <Link
+                    to="/admin"
+                    className="flex h-10 items-center gap-2 border border-foreground bg-accent px-3 font-label text-[11px] uppercase tracking-[0.14em] text-accent-foreground transition-opacity hover:opacity-85"
+                    title="Production desk"
+                  >
+                    <ShieldCheck className="h-4 w-4" strokeWidth={2} />
+                    Admin
+                  </Link>
+                )}
+                <Link
+                  to="/account"
+                  className="flex h-10 items-center gap-2 bg-foreground px-3 font-label text-[11px] uppercase tracking-[0.14em] text-background transition-opacity hover:opacity-85"
+                  title="My account"
+                >
+                  <User className="h-4 w-4" strokeWidth={2} />
+                  {user?.name ? user.name.split(" ")[0] : "Account"}
+                </Link>
+                <button
+                  onClick={() => {
+                    logout();
+                    navigate("/");
+                  }}
+                  className="flex h-10 w-10 items-center justify-center border border-foreground/60 transition-colors hover:bg-secondary"
+                  title="Log out"
+                  aria-label="Log out"
+                >
+                  <LogOut className="h-4 w-4" strokeWidth={2} />
+                </button>
+              </div>
             ) : (
               <Link
                 to="/login"
@@ -99,16 +117,26 @@ const Header = () => {
                 </NavLink>
               ))}
               {isAuthed ? (
-                <button
-                  onClick={() => {
-                    logout();
-                    setOpen(false);
-                    navigate("/");
-                  }}
-                  className="text-left font-label text-[11px] uppercase tracking-[0.18em] text-foreground/60"
-                >
-                  Log out
-                </button>
+                <>
+                  {user?.is_admin && (
+                    <NavLink to="/admin" className={navClass} onClick={() => setOpen(false)}>
+                      Admin
+                    </NavLink>
+                  )}
+                  <NavLink to="/account" className={navClass} onClick={() => setOpen(false)}>
+                    My Account
+                  </NavLink>
+                  <button
+                    onClick={() => {
+                      logout();
+                      setOpen(false);
+                      navigate("/");
+                    }}
+                    className="text-left font-label text-[11px] uppercase tracking-[0.18em] text-foreground/60"
+                  >
+                    Log out
+                  </button>
+                </>
               ) : (
                 <NavLink to="/login" className={navClass} onClick={() => setOpen(false)}>
                   Client Login

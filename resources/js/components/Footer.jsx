@@ -8,7 +8,7 @@ const Footer = () => (
     <div className="mx-auto grid max-w-[90rem] gap-10 px-4 py-14 sm:px-8 md:grid-cols-12">
       <div className="md:col-span-5">
         <div className="flex items-center gap-3">
-          <img src={LOGO_URL} alt="J.J. Serow goat head logo" className="h-12 w-12 border border-background/40 object-cover" />
+          <img src={LOGO_URL} alt="J.J. Serow goat head logo" className="h-12 w-12 border border-background/40 bg-background object-contain p-1" />
           <div className="leading-none">
             <p className="font-display text-2xl font-black tracking-tight">J.J. SEROW</p>
             <p className="mt-1 font-label text-[9px] uppercase tracking-[0.3em] text-background/60">Clothing Co.</p>

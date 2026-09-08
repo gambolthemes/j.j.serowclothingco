@@ -1,4 +1,5 @@
-export const LOGO_URL = "https://images.hostinger.com/82fe5138-b8ff-4959-9f8c-525de64f604f.png";
+export const LOGO_URL = "/images/mark.svg";
+export const LOGO_LOCKUP_URL = "/images/logo.svg";
 export const HERO_URL = "https://images.hostinger.com/f5a8f912-eb6d-4ef5-844c-0c929393b5c0.png";
 export const FACTORY_URL = "https://images.hostinger.com/2a655bec-48a0-42cb-835c-a58da604c65e.png";
 

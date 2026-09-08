@@ -1,5 +1,5 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import { Lock, Trash2, MessageCircle } from "lucide-react";
 import { TwentyDaysBadge } from "@/components/Badges";
@@ -17,10 +17,26 @@ import {
 } from "@/lib/pricing";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
+import { generalError, listAddresses, placeOrder } from "@/lib/api";
 
 const CartPage = () => {
   const { isAuthed } = useAuth();
-  const { items, updateSets, removeItem } = useCart();
+  const { items, updateSets, removeItem, clear } = useCart();
+  const navigate = useNavigate();
+  const [addresses, setAddresses] = useState([]);
+  const [addressId, setAddressId] = useState("");
+  const [placing, setPlacing] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!isAuthed) return;
+    listAddresses()
+      .then((list) => {
+        setAddresses(list);
+        setAddressId(String(list.find((a) => a.is_default)?.id ?? list[0]?.id ?? ""));
+      })
+      .catch(() => setAddresses([]));
+  }, [isAuthed]);
 
   const detailed = items
     .map((item) => {
@@ -41,23 +57,62 @@ const CartPage = () => {
   const subtotal = detailed.reduce((a, d) => a + d.total, 0);
   const gst = Math.round(subtotal * GST_RATE);
 
-  const confirmOnWhatsApp = () => {
-    const lines = detailed.map(
-      (d) =>
-        `• ${d.product.name} / ${d.item.colorName} — ${d.item.sets} sets (${ratioLabel(d.item.ratio)})` +
-        `${d.item.sample ? " + sample set" : ""}${d.item.privateLabel ? " + private label" : ""} — ${inr(d.total)}`
-    );
-    const message = encodeURIComponent(
-      [
-        "J.J. SEROW — BULK ORDER INQUIRY",
-        ...lines,
-        `Subtotal: ${inr(subtotal)}`,
-        `GST (5%): ${inr(gst)}`,
-        `Total: ${inr(subtotal + gst)}`,
-        "Terms: 100% advance • 20 days estimate",
-      ].join("\n")
-    );
-    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, "_blank");
+  /**
+   * Records the order first so the code quoted on WhatsApp resolves to something
+   * real, then hands off. The tab is opened before the await — a popup opened
+   * after one is no longer tied to the click and gets blocked.
+   */
+  const confirmOnWhatsApp = async () => {
+    if (placing) return;
+    setError("");
+    setPlacing(true);
+
+    const tab = window.open("", "_blank");
+
+    try {
+      const order = await placeOrder({
+        address_id: addressId ? Number(addressId) : null,
+        items: detailed.map((d) => ({
+          product_id: String(d.item.productId),
+          product_name: d.product.name,
+          color_name: d.item.colorName,
+          ratio: d.item.ratio,
+          sets: d.item.sets,
+          private_label: Boolean(d.item.privateLabel),
+          sample: Boolean(d.item.sample),
+          per_set_price: d.perSet,
+          line_total: d.total,
+        })),
+      });
+
+      const lines = detailed.map(
+        (d) =>
+          `• ${d.product.name} / ${d.item.colorName} — ${d.item.sets} sets (${ratioLabel(d.item.ratio)})` +
+          `${d.item.sample ? " + sample set" : ""}${d.item.privateLabel ? " + private label" : ""} — ${inr(d.total)}`
+      );
+      const message = encodeURIComponent(
+        [
+          `J.J. SEROW — BULK ORDER ${order.code}`,
+          ...lines,
+          `Subtotal: ${inr(order.subtotal)}`,
+          `GST (5%): ${inr(order.gst)}`,
+          `Total: ${inr(order.total)}`,
+          "Terms: 100% advance • 20 days estimate",
+        ].join("\n")
+      );
+
+      const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`;
+      if (tab) tab.location.href = url;
+      else window.location.href = url;
+
+      clear();
+      navigate(`/account/orders/${order.code}`);
+    } catch (err) {
+      tab?.close();
+      setError(generalError(err, "Could not record your order. Nothing was sent — try again."));
+    } finally {
+      setPlacing(false);
+    }
   };
 
   return (
@@ -181,15 +236,49 @@ const CartPage = () => {
                     <span className="font-display text-2xl font-black">{inr(subtotal + gst)}</span>
                   </div>
                 </div>
-                <p className="mt-3 font-label text-[10px] uppercase tracking-[0.14em] text-foreground/50">
+                <div className="mt-5 border-t border-foreground/25 pt-4">
+                  <p className="font-label text-[10px] uppercase tracking-[0.16em] text-foreground/60">
+                    Ship to
+                  </p>
+                  {addresses.length > 0 ? (
+                    <select
+                      value={addressId}
+                      onChange={(e) => setAddressId(e.target.value)}
+                      className="mt-2 h-11 w-full border border-foreground/60 bg-transparent px-2 text-sm focus:outline-none focus:ring-1 focus:ring-foreground"
+                    >
+                      {addresses.map((a) => (
+                        <option key={a.id} value={a.id}>
+                          {a.label} — {a.city}, {a.state} {a.pincode}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <p className="mt-2 text-sm text-foreground/60">
+                      No address saved.{" "}
+                      <Link to="/account/addresses" className="underline underline-offset-4">
+                        Add one
+                      </Link>{" "}
+                      so dispatch knows where this goes.
+                    </p>
+                  )}
+                </div>
+
+                <p className="mt-4 font-label text-[10px] uppercase tracking-[0.14em] text-foreground/50">
                   GST invoice auto-generated on confirmation
                 </p>
                 <button
                   onClick={confirmOnWhatsApp}
-                  className="mt-5 flex h-12 w-full items-center justify-center gap-2 bg-foreground font-label text-xs font-semibold uppercase tracking-[0.16em] text-background transition-transform hover:-translate-y-0.5 active:translate-y-0"
+                  disabled={placing}
+                  className="mt-5 flex h-12 w-full items-center justify-center gap-2 bg-foreground font-label text-xs font-semibold uppercase tracking-[0.16em] text-background transition-transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:hover:translate-y-0"
                 >
-                  <MessageCircle className="h-4 w-4" /> Confirm order on WhatsApp
+                  <MessageCircle className="h-4 w-4" />
+                  {placing ? "Recording order…" : "Confirm order on WhatsApp"}
                 </button>
+                {error && (
+                  <p className="mt-3 border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                    {error}
+                  </p>
+                )}
               </div>
               <PaymentTermsBox className="mt-5" />
             </div>

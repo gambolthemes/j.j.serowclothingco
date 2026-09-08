@@ -6,7 +6,7 @@ import Reveal from "@/components/Reveal";
 import CountUp from "@/components/CountUp";
 import { TwentyDaysBadge } from "@/components/Badges";
 import PaymentTermsBox from "@/components/PaymentTermsBox";
-import { PRODUCTS, COLORS, HERO_URL, FACTORY_URL, colorBase, minBase } from "@/data/products";
+import { PRODUCTS, COLORS, HERO_URL, FACTORY_URL, minBase } from "@/data/products";
 import { inr, MOQ_SETS } from "@/lib/pricing";
 import { useAuth } from "@/contexts/AuthContext";
 

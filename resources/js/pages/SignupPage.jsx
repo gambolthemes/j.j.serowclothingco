@@ -42,7 +42,7 @@ const SignupPage = () => {
         <title>Retailer Sign Up — J.J. Serow Clothing Co.</title>
         <meta name="description" content="Register your retail business for wholesale pricing and set-wise bulk ordering." />
       </Helmet>
-      <img src={LOGO_URL} alt="J.J. Serow goat head logo" className="h-16 w-16 border border-foreground/60 object-cover" />
+      <img src={LOGO_URL} alt="J.J. Serow goat head logo" className="h-16 w-16 border border-foreground/60 object-contain p-1" />
       <h1 className="mt-6 font-display text-4xl font-black tracking-tight">Retailer Sign Up</h1>
       <p className="mt-2 text-center font-label text-[10px] uppercase tracking-[0.2em] text-foreground/55">
         Unlock colorwise wholesale pricing

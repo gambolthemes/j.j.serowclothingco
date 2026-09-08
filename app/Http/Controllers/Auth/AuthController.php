@@ -33,7 +33,7 @@ class AuthController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
-        return response()->json(['user' => $this->publicUser($user)], 201);
+        return response()->json(['user' => $user->publicPayload()], 201);
     }
 
     public function login(Request $request): JsonResponse
@@ -51,7 +51,7 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
-        return response()->json(['user' => $this->publicUser($request->user())]);
+        return response()->json(['user' => $request->user()->publicPayload()]);
     }
 
     public function logout(Request $request): JsonResponse
@@ -66,16 +66,6 @@ class AuthController extends Controller
 
     public function user(Request $request): JsonResponse
     {
-        $user = $request->user();
-
-        return response()->json(['user' => $user ? $this->publicUser($user) : null]);
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function publicUser(User $user): array
-    {
-        return $user->only(['id', 'name', 'company', 'email']);
+        return response()->json(['user' => $request->user()?->publicPayload()]);
     }
 }

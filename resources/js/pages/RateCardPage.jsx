@@ -24,7 +24,7 @@ const RateCardPage = () => (
 
     <div className="flex flex-wrap items-start justify-between gap-6">
       <div className="flex items-center gap-4">
-        <img src={LOGO_URL} alt="J.J. Serow goat head logo" className="h-14 w-14 border border-foreground/60 object-cover" />
+        <img src={LOGO_URL} alt="J.J. Serow goat head logo" className="h-14 w-14 border border-foreground/60 object-contain p-1" />
         <div>
           <h1 className="font-display text-4xl font-black tracking-tight sm:text-5xl">Rate Card</h1>
           <p className="mt-1 font-label text-[10px] uppercase tracking-[0.25em] text-foreground/55">

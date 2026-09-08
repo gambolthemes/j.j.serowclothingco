@@ -4,7 +4,7 @@ import { Helmet } from "react-helmet";
 import { Lock } from "lucide-react";
 import Reveal from "@/components/Reveal";
 import { TwentyDaysBadge, StockBadge } from "@/components/Badges";
-import { PRODUCTS, COLORS, colorBase, minBase } from "@/data/products";
+import { PRODUCTS, COLORS, minBase } from "@/data/products";
 import { inr, MOQ_SETS } from "@/lib/pricing";
 import { useAuth } from "@/contexts/AuthContext";
 import {
