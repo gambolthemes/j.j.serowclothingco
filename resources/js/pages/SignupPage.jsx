@@ -26,7 +26,13 @@ const SignupPage = () => {
       await signup(email, password, { name, company });
       navigate("/catalog");
     } catch (err) {
-      setError(err?.response?.data?.errors?.email?.[0] || "Could not create the account. Try a different email.");
+      // 429 is the sign-up throttle; its message already says what to do next.
+      setError(
+        err?.response?.status === 429
+          ? err.response.data.message
+          : err?.response?.data?.errors?.email?.[0] ||
+              "Could not create the account. Try a different email."
+      );
     } finally {
       setBusy(false);
     }

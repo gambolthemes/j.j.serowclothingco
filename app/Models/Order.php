@@ -33,13 +33,14 @@ class Order extends Model
 
     protected $fillable = [
         'code', 'status', 'total_sets', 'subtotal', 'gst', 'total',
-        'shipping_address', 'notes', 'placed_at',
+        'shipping_address', 'billing_profile', 'notes', 'placed_at',
     ];
 
     protected function casts(): array
     {
         return [
             'shipping_address' => 'array',
+            'billing_profile' => 'array',
             'subtotal' => 'decimal:2',
             'gst' => 'decimal:2',
             'total' => 'decimal:2',
@@ -55,6 +56,23 @@ class Order extends Model
     public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function statusEvents(): HasMany
+    {
+        return $this->hasMany(OrderStatusEvent::class)->orderByDesc('created_at');
+    }
+
+    /** Online payment attempts, successful or not, newest first. */
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class)->latest('id');
+    }
+
+    /** True once an online payment has settled against this order. */
+    public function isPaidOnline(): bool
+    {
+        return $this->payments()->where('status', Payment::PAID)->exists();
     }
 
     public function statusLabel(): string

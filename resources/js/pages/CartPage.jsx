@@ -6,7 +6,9 @@ import { TwentyDaysBadge } from "@/components/Badges";
 import PaymentTermsBox from "@/components/PaymentTermsBox";
 import { COLORS, findProduct, colorBase } from "@/data/products";
 import {
+  GST_LABEL,
   GST_RATE,
+  LEAD_LABEL,
   MOQ_SETS,
   WHATSAPP_NUMBER,
   perSetPrice,
@@ -21,7 +23,7 @@ import { generalError, listAddresses, placeOrder } from "@/lib/api";
 
 const CartPage = () => {
   const { isAuthed } = useAuth();
-  const { items, updateSets, removeItem, clear } = useCart();
+  const { items, updateSets, removeItem, clear, syncing } = useCart();
   const navigate = useNavigate();
   const [addresses, setAddresses] = useState([]);
   const [addressId, setAddressId] = useState("");
@@ -95,9 +97,9 @@ const CartPage = () => {
           `J.J. SEROW — BULK ORDER ${order.code}`,
           ...lines,
           `Subtotal: ${inr(order.subtotal)}`,
-          `GST (5%): ${inr(order.gst)}`,
+          `${GST_LABEL}: ${inr(order.gst)}`,
           `Total: ${inr(order.total)}`,
-          "Terms: 100% advance • 20 days estimate",
+          `Terms: 100% advance • ${LEAD_LABEL} estimate`,
         ].join("\n")
       );
 
@@ -121,7 +123,7 @@ const CartPage = () => {
         <title>Bulk Cart — J.J. Serow Clothing Co.</title>
         <meta
           name="description"
-          content="Your set-wise bulk order. 100% advance payment, order confirmed on WhatsApp within 6 hours, 20 days production estimate."
+          content={`Your set-wise bulk order. 100% advance payment, order confirmed on WhatsApp within 6 hours, ${LEAD_LABEL} production estimate.`}
         />
       </Helmet>
       <span className="vertical-label absolute left-1 top-24 hidden font-label text-[10px] uppercase tracking-[0.35em] text-foreground/40 lg:block">
@@ -228,7 +230,7 @@ const CartPage = () => {
                     <span className="font-label font-semibold">{inr(subtotal)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-foreground/70">GST (5%)</span>
+                    <span className="text-foreground/70">{GST_LABEL}</span>
                     <span className="font-label font-semibold">{inr(gst)}</span>
                   </div>
                   <div className="flex justify-between border-t border-foreground/40 pt-3">
@@ -265,6 +267,9 @@ const CartPage = () => {
 
                 <p className="mt-4 font-label text-[10px] uppercase tracking-[0.14em] text-foreground/50">
                   GST invoice auto-generated on confirmation
+                </p>
+                <p className="mt-1 font-label text-[10px] uppercase tracking-[0.14em] text-foreground/40">
+                  {syncing ? "Loading your saved cart…" : "Saved to your account — opens on any device"}
                 </p>
                 <button
                   onClick={confirmOnWhatsApp}

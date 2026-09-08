@@ -7,7 +7,7 @@ import CountUp from "@/components/CountUp";
 import { TwentyDaysBadge } from "@/components/Badges";
 import PaymentTermsBox from "@/components/PaymentTermsBox";
 import { PRODUCTS, COLORS, HERO_URL, FACTORY_URL, minBase } from "@/data/products";
-import { inr, MOQ_SETS } from "@/lib/pricing";
+import { COMPANY_CITY, LEAD_DAYS, LEAD_LABEL, MOQ_LABEL, MOQ_SETS, inr } from "@/lib/pricing";
 import { useAuth } from "@/contexts/AuthContext";
 
 const STEPS = [
@@ -28,8 +28,8 @@ const STEPS = [
   },
   {
     icon: Truck,
-    title: "Dispatch in 20 days",
-    body: "Cutting, stitching, QC and dispatch run on a 20-day estimate. Track every stage live on the tracking page.",
+    title: `Dispatch in ${LEAD_LABEL}`,
+    body: `Cutting, stitching, QC and dispatch run on a ${LEAD_DAYS}-day estimate. Track every stage live on the tracking page.`,
   },
 ];
 
@@ -43,7 +43,7 @@ const HomePage = () => {
         <title>J.J. Serow Clothing Co. — Bulk Shirts & T-Shirts Wholesale, Set Wise</title>
         <meta
           name="description"
-          content="B2B wholesale shirts and T-shirts for retailers. Bulk only, set wise only — 4 or 5 pc sets, MOQ 10 sets per color, 20 days estimate, 100% advance."
+          content={`B2B wholesale shirts and T-shirts for retailers. Bulk only, set wise only — 4 or 5 pc sets, ${MOQ_LABEL} per color, ${LEAD_LABEL} estimate, 100% advance.`}
         />
       </Helmet>
 
@@ -71,7 +71,7 @@ const HomePage = () => {
             <Reveal delay={0.16}>
               <p className="mt-8 max-w-md text-base leading-relaxed text-foreground/75">
                 No single pieces. No retail. One set is 4 pcs (M, L, XL, XXL) or 5 pcs with S —
-                custom ratios welcome. Minimum 10 sets per color, dispatched on a 20-day estimate.
+                custom ratios welcome. Minimum {MOQ_SETS} sets per color, dispatched on a {LEAD_DAYS}-day estimate.
               </p>
             </Reveal>
             <Reveal delay={0.24}>
@@ -95,7 +95,7 @@ const HomePage = () => {
                 {[
                   `MOQ ${MOQ_SETS} sets / color`,
                   "5 colorways",
-                  "20 days estimate",
+                  `${LEAD_LABEL} estimate`,
                   "100% advance",
                 ].map((s) => (
                   <div key={s} className="bg-background px-3 py-3 font-label text-[10px] uppercase tracking-[0.14em] text-foreground/70">
@@ -237,7 +237,7 @@ const HomePage = () => {
                 The serow climbs the steepest ridges of the Himalaya on sure feet. We built J.J.
                 Serow Clothing Co. the same way: a narrow range, honest fabric, and production
                 discipline that retailers can plan their racks around. Every style is cut, stitched
-                and checked in Tirupur — and every order ships on a 20-day estimate we actually keep.
+                and checked in {COMPANY_CITY} — and every order ships on a {LEAD_DAYS}-day estimate we actually keep.
               </p>
             </Reveal>
             <div className="mt-10 grid grid-cols-2 gap-px border border-foreground/60 bg-foreground/60 sm:grid-cols-4">

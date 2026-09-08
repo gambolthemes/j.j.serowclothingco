@@ -5,7 +5,10 @@ import { useAuth } from '@/contexts/AuthContext';
 const LINKS = [
     { to: '/admin', label: 'Dashboard', end: true },
     { to: '/admin/orders', label: 'Orders' },
+    { to: '/admin/products', label: 'Products' },
+    { to: '/admin/colors', label: 'Colours' },
     { to: '/admin/retailers', label: 'Retailers' },
+    { to: '/admin/settings', label: 'Settings' },
 ];
 
 const AdminLayout = () => {

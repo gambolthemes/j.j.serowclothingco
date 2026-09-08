@@ -16,11 +16,16 @@ window.axios.defaults.withXSRFToken = true;
    than a react-router push, so the stale auth state in memory is discarded. */
 const SESSION_LOST = [401, 419];
 
+/* Screens a signed-out visitor is meant to be on. Bouncing them to /login from
+   here would be a loop on the login screen itself, and would throw a retailer
+   off the reset form mid-way through setting a new password. */
+const GUEST_SCREENS = ['/login', '/signup', '/forgot-password', '/reset-password'];
+
 window.axios.interceptors.response.use(
     (response) => response,
     (error) => {
         const status = error?.response?.status;
-        const onLoginScreen = ['/login', '/signup'].includes(window.location.pathname);
+        const onLoginScreen = GUEST_SCREENS.includes(window.location.pathname);
 
         if (SESSION_LOST.includes(status) && !onLoginScreen) {
             window.location.assign('/login');

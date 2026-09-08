@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
-import { Check, Package, MapPin, FileText } from 'lucide-react';
+import { Check, Package, MapPin, FileText, Landmark } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { fieldErrors, generalError, listOrders, updateProfile } from '@/lib/api';
 import { inr } from '@/lib/pricing';
@@ -77,10 +77,11 @@ const AccountPage = () => {
                 ))}
             </div>
 
-            <div className="mt-4 grid gap-4 sm:grid-cols-3">
+            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 {[
                     { to: '/account/orders', label: 'Order history', icon: Package },
                     { to: '/account/addresses', label: 'Shipping addresses', icon: MapPin },
+                    { to: '/account/payment', label: 'Payment details', icon: Landmark },
                     { to: '/rate-card', label: 'Wholesale rate card', icon: FileText },
                 ].map((link) => (
                     <Link

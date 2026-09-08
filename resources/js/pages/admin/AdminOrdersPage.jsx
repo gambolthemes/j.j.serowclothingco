@@ -1,8 +1,14 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
-import { ArrowRight, Search } from 'lucide-react';
-import { ORDER_STATUSES, adminListOrders, adminUpdateOrderStatus, formatDate } from '@/lib/api';
+import { ArrowRight, Download, Search } from 'lucide-react';
+import {
+    ORDER_STATUSES,
+    adminExportUrl,
+    adminListOrders,
+    adminUpdateOrderStatus,
+    formatDate,
+} from '@/lib/api';
 import { inr } from '@/lib/pricing';
 
 const AdminOrdersPage = () => {
@@ -73,6 +79,13 @@ const AdminOrdersPage = () => {
                             </option>
                         ))}
                     </select>
+
+                    <a
+                        href={adminExportUrl('orders', { status, q })}
+                        className="flex h-11 items-center gap-2 border border-foreground/60 px-3 font-label text-[11px] uppercase tracking-[0.12em] hover:bg-secondary"
+                    >
+                        <Download className="h-3.5 w-3.5" /> CSV
+                    </a>
 
                     <form
                         onSubmit={(e) => {

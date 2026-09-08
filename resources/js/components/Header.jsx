@@ -4,6 +4,7 @@ import { LogOut, Menu, ShieldCheck, ShoppingBag, User, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { LOGO_LOCKUP_URL } from "@/data/products";
+import { LEAD_LABEL, MOQ_LABEL } from "@/lib/pricing";
 
 const NAV = [
   { to: "/catalog", label: "Catalog" },
@@ -25,8 +26,8 @@ const Header = () => {
   return (
     <header className="sticky top-0 z-50 print:hidden">
       <div className="flex items-center justify-between bg-foreground px-4 py-1.5 font-label text-[9px] uppercase tracking-[0.22em] text-background sm:px-8 sm:text-[10px]">
-        <span>Bulk only • Set wise only • MOQ 10 sets / color</span>
-        <span className="hidden sm:inline">20 days estimate on every order</span>
+        <span>Bulk only • Set wise only • {MOQ_LABEL} / color</span>
+        <span className="hidden sm:inline">{LEAD_LABEL} estimate on every order</span>
       </div>
       <div className="border-b border-foreground/60 bg-background/95 backdrop-blur">
         <div className="mx-auto flex max-w-[90rem] items-center justify-between gap-4 px-4 py-3 sm:px-8">
