@@ -63,6 +63,18 @@ class Order extends Model
         return $this->hasMany(OrderStatusEvent::class)->orderByDesc('created_at');
     }
 
+    /** Online payment attempts, successful or not, newest first. */
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class)->latest('id');
+    }
+
+    /** True once an online payment has settled against this order. */
+    public function isPaidOnline(): bool
+    {
+        return $this->payments()->where('status', Payment::PAID)->exists();
+    }
+
     public function statusLabel(): string
     {
         return self::STATUSES[$this->status] ?? $this->status;

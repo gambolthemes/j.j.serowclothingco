@@ -63,6 +63,25 @@ export const getOrder = (code) =>
 export const placeOrder = (payload) =>
     axios.post('/api/account/orders', payload).then(unwrap('order'));
 
+/* ---- paying an order ----
+   Two steps because that is how both gateways work: open a payment, let the
+   buyer approve it in the gateway's own UI, then come back to be verified.
+   Neither call carries an amount — the server takes that off the order. */
+
+export const startPayment = (code, gateway) =>
+    axios
+        .post(`/api/account/orders/${encodeURIComponent(code)}/pay`, { gateway })
+        .then((r) => r.data);
+
+export const confirmPayment = (code, { gateway, gatewayOrderId, payload }) =>
+    axios
+        .post(`/api/account/orders/${encodeURIComponent(code)}/pay/confirm`, {
+            gateway,
+            gateway_order_id: gatewayOrderId,
+            payload,
+        })
+        .then((r) => r.data);
+
 export const cancelOrder = (code, reason) =>
     axios
         .post(`/api/account/orders/${encodeURIComponent(code)}/cancel`, { reason })

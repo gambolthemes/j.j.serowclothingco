@@ -65,6 +65,8 @@ const AdminSettingsPage = () => {
                 SAMPLE_SET_PRICE: Number(form.SAMPLE_SET_PRICE),
                 PRIVATE_LABEL_PER_PC: Number(form.PRIVATE_LABEL_PER_PC),
                 GST_RATE: Number(form.GST_RATE),
+                // Stored as a number so Charge can divide by it without a cast.
+                PAYPAL_FX_RATE: Number(form.PAYPAL_FX_RATE ?? 0),
                 WHATSAPP_NUMBER: String(form.WHATSAPP_NUMBER),
                 TIERS: form.TIERS.map((t) => ({
                     min: Number(t.min),
@@ -277,6 +279,29 @@ const AdminSettingsPage = () => {
                             placeholder="HDFC Bank, Ludhiana"
                         />
                         {errors.PAY_TO_BANK_NAME && <p className={errorClass}>{errors.PAY_TO_BANK_NAME}</p>}
+                    </label>
+                </div>
+
+                <div className="mt-6 border-t border-foreground/20 pt-6">
+                    <p className={labelClass}>PayPal exchange rate</p>
+                    <p className="mb-3 max-w-2xl text-sm text-foreground/60">
+                        PayPal cannot settle rupees from abroad, so an overseas buyer is charged in{' '}
+                        {form.PAYPAL_CURRENCY ?? 'USD'} at this rate. Put your margin in it — it is not a
+                        market feed, and a buyer sees the converted figure before they pay.{' '}
+                        <strong>Leave it at 0 and the PayPal button never appears.</strong>
+                    </p>
+                    <label className="block max-w-xs">
+                        <span className={labelClass}>Rupees per 1 USD</span>
+                        <input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            value={form.PAYPAL_FX_RATE ?? 0}
+                            onChange={set('PAYPAL_FX_RATE')}
+                            className={fieldClass}
+                            placeholder="83.50"
+                        />
+                        {errors.PAYPAL_FX_RATE && <p className={errorClass}>{errors.PAYPAL_FX_RATE}</p>}
                     </label>
                 </div>
             </div>

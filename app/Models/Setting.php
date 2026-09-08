@@ -60,6 +60,14 @@ class Setting extends Model
         'PAY_TO_IFSC' => '',
         'PAY_TO_BANK_NAME' => '',
         'PAY_TO_UPI' => '',
+
+        /*
+         * Rupees per 1 unit of the PayPal currency. PayPal cannot settle INR
+         * cross-border, so a rupee total has to be converted to charge it — and
+         * the rate is a commercial decision (it usually carries a margin), not
+         * a live market number. Zero keeps PayPal switched off.
+         */
+        'PAYPAL_FX_RATE' => 0,
     ];
 
     /**

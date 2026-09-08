@@ -45,6 +45,10 @@ class SettingController extends Controller
             'PAY_TO_IFSC' => ['nullable', 'string', 'size:11', 'regex:/^[A-Z]{4}0[A-Z0-9]{6}$/'],
             'PAY_TO_BANK_NAME' => ['nullable', 'string', 'max:160'],
             'PAY_TO_UPI' => ['nullable', 'string', 'max:120', 'regex:/^[a-zA-Z0-9._-]{2,64}@[a-zA-Z]{2,32}$/'],
+            // 0 switches PayPal off. The upper bound is only there to catch a
+            // decimal point in the wrong place — a rate of 8350 would charge a
+            // buyer a hundredth of what the order is worth.
+            'PAYPAL_FX_RATE' => ['nullable', 'numeric', 'min:0', 'max:1000'],
 
             'TIERS' => ['required', 'array', 'min:1'],
             'TIERS.*.min' => ['required', 'integer', 'min:1'],

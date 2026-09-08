@@ -45,7 +45,9 @@ class OrderController extends Controller
 
     public function show(string $code): JsonResponse
     {
-        $order = Order::with(['items', 'user:id,name,company,email', 'user.paymentProfile', 'statusEvents'])
+        $order = Order::with([
+            'items', 'user:id,name,company,email', 'user.paymentProfile', 'statusEvents', 'payments',
+        ])
             ->where('code', strtoupper(trim($code)))
             ->firstOrFail();
 
@@ -55,6 +57,10 @@ class OrderController extends Controller
             // The account the advance should arrive from, so the desk can match
             // a transfer to an order instead of asking on WhatsApp.
             'payment_profile' => $order->user->paymentProfile?->payload(),
+            // Online payment attempts, failures included — a retailer saying
+            // "it failed" leaves a trail the desk can check without logging
+            // into the gateway dashboard.
+            'payments' => $order->payments->map(fn ($payment) => $payment->payload()),
             'notes' => $order->notes,
             'history' => $order->statusEvents->map(fn ($event) => [
                 'id' => $event->id,

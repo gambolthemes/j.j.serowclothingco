@@ -3,6 +3,7 @@
 use App\Http\Controllers\Account\AddressController;
 use App\Http\Controllers\Account\CartController;
 use App\Http\Controllers\Account\OrderController;
+use App\Http\Controllers\Account\PaymentController;
 use App\Http\Controllers\Account\PaymentProfileController;
 use App\Http\Controllers\Account\ProfileController;
 use App\Http\Controllers\Admin\ColorController;
@@ -15,6 +16,7 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\SeoController;
 use App\Http\Controllers\TrackingController;
+use App\Http\Controllers\WebhookController;
 use App\Support\Storefront;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -67,6 +69,13 @@ Route::middleware('auth')->prefix('api/account')->group(function () {
     Route::get('/orders/{code}', [OrderController::class, 'show']);
     Route::post('/orders/{code}/cancel', [OrderController::class, 'cancel']);
 
+    // Paying an order online. Throttled because opening a payment is a call out
+    // to the gateway — cheap for us to send, not free for them to receive.
+    Route::post('/orders/{code}/pay', [PaymentController::class, 'start'])
+        ->middleware('throttle:20,1');
+    Route::post('/orders/{code}/pay/confirm', [PaymentController::class, 'confirm'])
+        ->middleware('throttle:20,1');
+
     // The draft cart, so it follows the retailer between devices.
     Route::get('/cart', [CartController::class, 'show']);
     Route::put('/cart', [CartController::class, 'update']);
@@ -109,6 +118,14 @@ Route::middleware(['auth', 'admin'])->prefix('api/admin')->group(function () {
     Route::post('/media', [MediaController::class, 'store']);
     Route::delete('/media', [MediaController::class, 'destroy']);
 });
+
+/*
+| Gateway callbacks. No session, no CSRF token (see bootstrap/app.php) — the
+| caller is Razorpay or PayPal, not a browser. Each request is only acted on
+| once its signature verifies, which the gateway class does.
+*/
+Route::post('/webhooks/{gateway}', WebhookController::class)
+    ->whereIn('gateway', ['razorpay', 'paypal']);
 
 /*
 | Crawler files. Generated, not static, so the sitemap tracks the live catalog

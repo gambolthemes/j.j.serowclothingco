@@ -8,6 +8,7 @@ use App\Models\Color;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Setting;
+use App\Support\Payments\Gateways;
 use App\Support\Pricing;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -35,7 +36,10 @@ class OrderController extends Controller
 
     public function show(Request $request, string $code): JsonResponse
     {
-        $order = $request->user()->orders()->with('items')->where('code', strtoupper(trim($code)))->firstOrFail();
+        $order = $request->user()->orders()
+            ->with(['items', 'payments'])
+            ->where('code', strtoupper(trim($code)))
+            ->firstOrFail();
 
         return response()->json(['order' => $this->summary($order) + [
             'shipping_address' => $order->shipping_address,
@@ -46,6 +50,11 @@ class OrderController extends Controller
             'pay_to' => Setting::payTo(),
             'notes' => $order->notes,
             'can_cancel' => in_array($order->status, self::CANCELLABLE, true),
+            'payments' => $order->payments->map(fn ($payment) => $payment->payload()),
+            // Only offered while the order is actually payable, and only for
+            // gateways that are configured — an empty list is the normal state
+            // on a site that takes bank transfers alone.
+            'payment_options' => $order->status === 'placed' ? Gateways::options() : [],
             'items' => $order->items->map(fn ($item) => [
                 'id' => $item->id,
                 'product_id' => $item->product_id,

@@ -275,6 +275,76 @@ const AdminOrderDetailPage = () => {
 
                     <div className={`${cardClass} mt-8`}>
                         <h3 className="font-label text-[11px] font-semibold uppercase tracking-[0.2em]">
+                            Payment
+                        </h3>
+
+                        {order.payment_profile && (
+                            <dl className="mt-4 grid gap-x-8 gap-y-2 text-sm sm:grid-cols-3">
+                                {[
+                                    ['Pays by', order.payment_profile.method_label],
+                                    ['GSTIN', order.payment_profile.gstin],
+                                    ['UPI ID', order.payment_profile.upi_id],
+                                    ['Account', order.payment_profile.bank_account_number],
+                                    ['IFSC', order.payment_profile.bank_ifsc],
+                                ]
+                                    .filter(([, value]) => value)
+                                    .map(([term, value]) => (
+                                        <div key={term}>
+                                            <dt className="font-label text-[10px] uppercase tracking-[0.14em] text-foreground/55">
+                                                {term}
+                                            </dt>
+                                            <dd className="mt-1 break-all font-label font-semibold">{value}</dd>
+                                        </div>
+                                    ))}
+                            </dl>
+                        )}
+
+                        {order.payments?.length ? (
+                            <ul className="mt-4 border-t border-foreground/20 pt-4">
+                                {order.payments.map((payment) => (
+                                    <li
+                                        key={payment.id}
+                                        className="flex flex-wrap items-baseline justify-between gap-2 border-b border-foreground/15 py-2 last:border-b-0"
+                                    >
+                                        <span className="font-label text-[10px] uppercase tracking-[0.14em] text-foreground/60">
+                                            {payment.gateway} • {formatDate(payment.created_at)}
+                                        </span>
+                                        <span className="font-label text-sm font-semibold">
+                                            {payment.currency === 'INR'
+                                                ? inr(payment.amount)
+                                                : `${payment.currency} ${payment.amount.toFixed(2)}`}
+                                            {payment.fx_rate ? (
+                                                <span className="ml-2 font-normal text-foreground/50">
+                                                    @ ₹{payment.fx_rate}
+                                                </span>
+                                            ) : null}
+                                        </span>
+                                        <span
+                                            className={`border px-2 py-0.5 font-label text-[10px] uppercase tracking-[0.1em] ${
+                                                payment.status === 'paid'
+                                                    ? 'border-foreground/50'
+                                                    : 'border-destructive/50 text-destructive'
+                                            }`}
+                                        >
+                                            {payment.status}
+                                        </span>
+                                        {payment.reference && (
+                                            <span className="w-full break-all font-label text-[10px] tracking-[0.08em] text-foreground/45">
+                                                {payment.reference}
+                                            </span>
+                                        )}
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="mt-4 text-sm text-foreground/60">
+                                No online payment on this order — paid by transfer, or not yet paid.
+                            </p>
+                        )}
+                    </div>
+
+                    <div className={`${cardClass} mt-8`}>
+                        <h3 className="font-label text-[11px] font-semibold uppercase tracking-[0.2em]">
                             Stage history
                         </h3>
                         {order.history?.length ? (

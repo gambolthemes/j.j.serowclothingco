@@ -98,7 +98,39 @@ host to refuse. Two consequences:
 - it is **content, not code**: back it up with the database, and never wipe it
   as part of a deploy (a `git clean` there deletes the catalog photography)
 
-### 5. Check
+### 5. Payment gateways (optional)
+
+Both are off until their keys are in `.env`; with none configured, retailers pay
+by transfer exactly as before and no pay button appears. See
+`.env.production.example` for the variables.
+
+| | Razorpay | PayPal |
+| --- | --- | --- |
+| For | Indian retailers | buyers **outside** India |
+| Currency | INR | USD, at the rate under admin settings |
+| Methods | UPI, netbanking, card, wallet | PayPal balance and cards |
+
+**PayPal cannot take India-domestic payments.** PayPal ended domestic India
+payments in April 2021 and does not settle INR cross-border, so it is only worth
+enabling if you sell overseas. It also stays hidden until a USD rate is set
+(Admin → Settings → Payment instructions) — without one there is no honest way
+to convert a rupee total, and the rate usually carries a margin, so it is a
+decision rather than a market lookup.
+
+Register both webhooks — they are what marks an order paid when a buyer's
+browser dies mid-payment:
+
+| Gateway | URL | Events |
+| --- | --- | --- |
+| Razorpay | `https://your-host/webhooks/razorpay` | `payment.captured` |
+| PayPal | `https://your-host/webhooks/paypal` | `PAYMENT.CAPTURE.COMPLETED`, `CHECKOUT.ORDER.APPROVED` |
+
+Every callback is verified before anything is settled — Razorpay by HMAC
+signature, PayPal by capturing server-side and by its signature-verification
+API. An unsigned webhook is ignored, and a webhook quoting the wrong amount is
+refused and logged.
+
+### 6. Check
 
 - `php artisan about` — confirm `Debug Mode: OFF` and the mailer is not `log`
 - `curl https://your-host/robots.txt` — the `Sitemap:` line must be your domain

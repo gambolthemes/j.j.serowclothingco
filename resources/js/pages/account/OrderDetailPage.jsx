@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import { ArrowLeft, FileText, XCircle } from 'lucide-react';
 import { cancelOrder, formatDate, generalError, getOrder } from '@/lib/api';
 import { GST_LABEL, LEAD_LABEL, inr, ratioLabel } from '@/lib/pricing';
 import { cardClass } from '@/components/account/ui';
+import PayNow from '@/components/account/PayNow';
 
 const OrderDetailPage = () => {
     const { code } = useParams();
@@ -12,13 +13,22 @@ const OrderDetailPage = () => {
     const [error, setError] = useState('');
     const [cancelling, setCancelling] = useState(false);
 
+    // Also used after a payment settles: the status, the history and whether
+    // the pay buttons still apply all change together, and only the server
+    // knows which of them did.
+    const refresh = useCallback(
+        () =>
+            getOrder(code)
+                .then(setOrder)
+                .catch(() => setError('That order is not on your account.')),
+        [code]
+    );
+
     useEffect(() => {
         setOrder(null);
         setError('');
-        getOrder(code)
-            .then(setOrder)
-            .catch(() => setError('That order is not on your account.'));
-    }, [code]);
+        refresh();
+    }, [refresh]);
 
     const cancel = async () => {
         if (!window.confirm(`Cancel order ${code}? This cannot be undone here.`)) return;
@@ -29,7 +39,7 @@ const OrderDetailPage = () => {
             await cancelOrder(code);
             // Refetched because cancelling also flips can_cancel and adds a
             // history row that the cancel response does not carry.
-            setOrder(await getOrder(code));
+            await refresh();
         } catch (err) {
             setError(generalError(err, 'Could not cancel that order.'));
         } finally {
@@ -101,6 +111,8 @@ const OrderDetailPage = () => {
                             )}
                         </div>
                     </div>
+
+                    <PayNow order={order} onPaid={refresh} />
 
                     <div className="mt-8 overflow-x-auto border-y border-foreground/60">
                         <table className="w-full min-w-[40rem] text-left">
